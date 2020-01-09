@@ -1,114 +1,211 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset=utf-8>
-	<title>three.js app</title>
-	<style>
-		body {
-			margin: 0;
-			overflow: hidden;
-		}
-		canvas {
-			border: 1px solid black;
-		}
-		table {
-			margin: auto;
-		}
-	</style>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
-<!--	<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.js"></script>-->
+    <meta charset=utf-8>
+    <title>three.js app</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        canvas {
+            border: 1px solid black;
+        }
+
+        table {
+            margin: auto;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
+    <!--	<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.js"></script>-->
 </head>
 <body>
-	<table>
-		<tr>
-			<td></td>
-			<td><canvas id="cvsA" height="100" width="100"></canvas></td>
-			<td></td>
-		</tr>
-		<tr>
-			<td><canvas id="cvsE" height="100" width="100"></canvas></td>
-			<td><canvas id="cvsB" height="100" width="100"></canvas></td>
-			<td><canvas id="cvsF" height="100" width="100"></canvas></td>
-		</tr>
-		<tr>
-			<td></td>
-			<td><canvas id="cvsC" height="100" width="100"></canvas></td>
-			<td></td>
-		</tr>
-		<tr>
-			<td></td>
-			<td><canvas id="cvsD" height="100" width="100"></canvas></td>
-			<td></td>
-		</tr>
-	</table>
-	<script>
-		var cvsA = document.getElementById( 'cvsA' );
-		var cvsB = document.getElementById( 'cvsB' );
-		var cvsC = document.getElementById( 'cvsC' );
-		var cvsD = document.getElementById( 'cvsD' );
-		var cvsE = document.getElementById( 'cvsE' );
-		var cvsF = document.getElementById( 'cvsF' );
+<div>
+    <table>
+        <tr>
+            <td></td>
+            <td>
+                <canvas id="cvsA" height="100" width="100"></canvas>
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>
+                <canvas id="cvsE" height="100" width="100"></canvas>
+            </td>
+            <td>
+                <canvas id="cvsB" height="100" width="100"></canvas>
+            </td>
+            <td>
+                <canvas id="cvsF" height="100" width="100"></canvas>
+            </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>
+                <canvas id="cvsC" height="100" width="100"></canvas>
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>
+                <canvas id="cvsD" height="100" width="100"></canvas>
+            </td>
+            <td></td>
+        </tr>
+    </table>
+</div>
+<div>
+    <canvas id="cvs3D"></canvas>
+</div>
+<script>
+    var camera, scene, renderer, mesh, material;
+    var drawStartPos = new THREE.Vector2();
 
-		var movement_matrix = { 
-			cvsA: {
-				37: cvsE,
-				38: cvsD,
-				39: cvsF,
-				40: cvsB,
-			},
-			cvsB: {
-				37: cvsE,
-				38: cvsA,
-				39: cvsF,
-				40: cvsC,
-			},
-			cvsC: {
-				37: cvsE,
-				38: cvsB,
-				39: cvsF,
-				40: cvsD,
-			},
-			cvsD: {
-				37: cvsE,
-				38: cvsC,
-				39: cvsF,
-				40: cvsA,
-			},
-			cvsE: {
-				37: cvsD,
-				38: cvsA,
-				39: cvsB,
-				40: cvsC,
-			},
-			cvsF: {
-				37: cvsB,
-				38: cvsA,
-				39: cvsD,
-				40: cvsC,
-			}
-		};
-		var activeCanvas = cvsB;
+    var cvsA = document.getElementById('cvsA');
+    var cvsB = document.getElementById('cvsB');
+    var cvsC = document.getElementById('cvsC');
+    var cvsD = document.getElementById('cvsD');
+    var cvsE = document.getElementById('cvsE');
+    var cvsF = document.getElementById('cvsF');
 
-		setColor(activeCanvas, 'orange');
+    var movement_matrix = {
+        cvsA: {
+            37: cvsE,
+            38: cvsD,
+            39: cvsF,
+            40: cvsB,
+        },
+        cvsB: {
+            37: cvsE,
+            38: cvsA,
+            39: cvsF,
+            40: cvsC,
+        },
+        cvsC: {
+            37: cvsE,
+            38: cvsB,
+            39: cvsF,
+            40: cvsD,
+        },
+        cvsD: {
+            37: cvsE,
+            38: cvsC,
+            39: cvsF,
+            40: cvsA,
+        },
+        cvsE: {
+            37: cvsD,
+            38: cvsA,
+            39: cvsB,
+            40: cvsC,
+        },
+        cvsF: {
+            37: cvsB,
+            38: cvsA,
+            39: cvsD,
+            40: cvsC,
+        }
+    };
+    var activeCanvas = cvsB;
 
-		function setColor(canvas, color){
-			canvas.getContext( '2d' ).fillStyle = color;
-			canvas.getContext( '2d' ).fillRect( 0, 0, 100, 100 );
-		}
+    function setColor(canvas, color) {
+        canvas.getContext('2d').fillStyle = color;
+        canvas.getContext('2d').fillRect(0, 0, 100, 100);
 
-		document.onkeydown = function(event) {
-			//console.log(event.keyCode);
-			//console.log(movement_matrix['cvsA']);
-			//console.log(activeCanvas.id);
-			if([37,38,39,40].includes(event.keyCode)){
-				var newActiveCanvas = movement_matrix[activeCanvas.id][event.keyCode];
-				setColor(newActiveCanvas, 'orange')
-				activeCanvas = newActiveCanvas;
-			}
+        var loader = new THREE.CubeTextureLoader();
+        material.envMap = loader
+            .load([
+                cvsA.toDataURL('image/png'),
+                cvsB.toDataURL('image/png'),
+                cvsC.toDataURL('image/png'),
+                cvsD.toDataURL('image/png'),
+                cvsE.toDataURL('image/png'),
+                cvsF.toDataURL('image/png')
+            ]);
+        material.needsUpdate = true;
+    }
 
-		};
+    document.onkeydown = function (event) {
+        //console.log(event.keyCode);
+        //console.log(movement_matrix['cvsA']);
+        //console.log(activeCanvas.id);
+        if ([37, 38, 39, 40].includes(event.keyCode)) {
+            var newActiveCanvas = movement_matrix[activeCanvas.id][event.keyCode];
+            setColor(newActiveCanvas, 'orange')
+            activeCanvas = newActiveCanvas;
+        }
 
+    };
 
-	</script>
+    init();
+    animate();
+
+    function init() {
+
+        camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 2000);
+        camera.position.z = 500;
+
+        scene = new THREE.Scene();
+
+        material = new THREE.MeshBasicMaterial();
+
+        mesh = new THREE.Mesh(new THREE.BoxBufferGeometry(200, 200, 200), material);
+        scene.add(mesh);
+
+        renderer = new THREE.WebGLRenderer({antialias: true, canvas: document.getElementById('cvs3D')});
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        window.addEventListener('resize', onWindowResize, false);
+        setColor(activeCanvas, 'orange');
+    }
+
+    function onWindowResize() {
+
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+    }
+
+    function animate() {
+
+        requestAnimationFrame(animate);
+
+        mesh.rotation.x += 0.01;
+        mesh.rotation.y += 0.01;
+
+        renderer.render(scene, camera);
+    }
+
+    function dataURItoBlob(dataURI) {
+        // convert base64 to raw binary data held in a string
+        // doesn't handle URLEncoded DataURIs - see SO answer #6850276 for code that does this
+        var byteString = atob(dataURI.split(',')[1]);
+
+        // separate out the mime component
+        var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0]
+
+        // write the bytes of the string to an ArrayBuffer
+        var ab = new ArrayBuffer(byteString.length);
+
+        // create a view into the buffer
+        var ia = new Uint8Array(ab);
+
+        // set the bytes of the buffer to the correct values
+        for (var i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+        }
+
+        // write the ArrayBuffer to a blob, and you're done
+        var blob = new Blob([ab], {type: mimeString});
+        return blob;
+    }
+</script>
 </body>
 </html>
