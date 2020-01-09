@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset=utf-8>
+	<title>three.js app</title>
+	<style>
+		body {
+			margin: 0;
+			overflow: hidden;
+		}
+		canvas {
+			border: 1px solid black;
+		}
+		table {
+			margin: auto;
+		}
+	</style>
+	<script type="text/javascript" src="dat.gui.min.js"></script>
+
+</head>
+<body>
+	<table>
+		<tr>
+			<td></td>
+			<td><canvas id="cvsA" height="100" width="100"></canvas></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td><canvas id="cvsE" height="100" width="100"></canvas></td>
+			<td><canvas id="cvsB" height="100" width="100"></canvas></td>
+			<td><canvas id="cvsF" height="100" width="100"></canvas></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td><canvas id="cvsC" height="100" width="100"></canvas></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td><canvas id="cvsD" height="100" width="100"></canvas></td>
+			<td></td>
+		</tr>
+	</table>
+
+
+	<script>
+		var cvsA = document.getElementById( 'cvsA' );
+		var cvsB = document.getElementById( 'cvsB' );
+		var cvsC = document.getElementById( 'cvsC' );
+		var cvsD = document.getElementById( 'cvsD' );
+		var cvsE = document.getElementById( 'cvsE' );
+		var cvsF = document.getElementById( 'cvsF' );
+
+		var movement_matrix = { 
+			cvsA: {
+				37: cvsE,
+				38: cvsD,
+				39: cvsF,
+				40: cvsB,
+			},
+			cvsB: {
+				37: cvsE,
+				38: cvsA,
+				39: cvsF,
+				40: cvsC,
+			},
+			cvsC: {
+				37: cvsE,
+				38: cvsB,
+				39: cvsF,
+				40: cvsD,
+			},
+			cvsD: {
+				37: cvsE,
+				38: cvsC,
+				39: cvsF,
+				40: cvsA,
+			},
+			cvsE: {
+				37: cvsD,
+				38: cvsA,
+				39: cvsB,
+				40: cvsC,
+			},
+			cvsF: {
+				37: cvsB,
+				38: cvsA,
+				39: cvsD,
+				40: cvsC,
+			}
+		};
+		var activeCanvas = cvsB;
+
+		setColor(activeCanvas, 'orange');
+
+		function setColor(canvas, color){
+			canvas.getContext( '2d' ).fillStyle = color;
+			canvas.getContext( '2d' ).fillRect( 0, 0, 100, 100 );
+		}
+
+		document.onkeydown = function(event) {
+			//console.log(event.keyCode);
+			//console.log(movement_matrix['cvsA']);
+			//console.log(activeCanvas.id);
+			var newActiveCanvas = movement_matrix[activeCanvas.id][event.keyCode];
+			setColor(newActiveCanvas, 'orange')
+			activeCanvas = newActiveCanvas;
+		};
+
+		
+
+	</script>
+</body>
+</html>
