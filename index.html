@@ -18,6 +18,7 @@
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
+    <script type="text/javascript" src="./libs/OrbitControl.js"></script>
     <!--	<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.js"></script>-->
 </head>
 <body>
@@ -26,32 +27,32 @@
         <tr>
             <td></td>
             <td>
-                <canvas id="cvsA" height="100" width="100"></canvas>
+                <canvas id="cvsA" height="64" width="64"></canvas>
             </td>
             <td></td>
         </tr>
         <tr>
             <td>
-                <canvas id="cvsE" height="100" width="100"></canvas>
+                <canvas id="cvsE" height="64" width="64"></canvas>
             </td>
             <td>
-                <canvas id="cvsB" height="100" width="100"></canvas>
+                <canvas id="cvsB" height="64" width="64"></canvas>
             </td>
             <td>
-                <canvas id="cvsF" height="100" width="100"></canvas>
+                <canvas id="cvsF" height="64" width="64"></canvas>
             </td>
         </tr>
         <tr>
             <td></td>
             <td>
-                <canvas id="cvsC" height="100" width="100"></canvas>
+                <canvas id="cvsC" height="64" width="64"></canvas>
             </td>
             <td></td>
         </tr>
         <tr>
             <td></td>
             <td>
-                <canvas id="cvsD" height="100" width="100"></canvas>
+                <canvas id="cvsD" height="64" width="64"></canvas>
             </td>
             <td></td>
         </tr>
@@ -61,9 +62,11 @@
     <canvas id="cvs3D"></canvas>
 </div>
 <script>
-    var camera, scene, renderer, mesh, material;
+    var camera, scene, renderer, mesh, material, controls;
     var drawStartPos = new THREE.Vector2();
-
+    const CANVAS_WIDTH = 64;
+    const NUMBER_OF_CELLS = 5;
+    const LINE_WIDTH = 1;
     var cvsA = document.getElementById('cvsA');
     var cvsB = document.getElementById('cvsB');
     var cvsC = document.getElementById('cvsC');
@@ -72,89 +75,186 @@
     var cvsF = document.getElementById('cvsF');
 
     var movement_matrix = {
-        cvsA: {
-            37: cvsE,
-            38: cvsD,
-            39: cvsF,
-            40: cvsB,
-        },
-        cvsB: {
-            37: cvsE,
-            38: cvsA,
-            39: cvsF,
-            40: cvsC,
-        },
-        cvsC: {
-            37: cvsE,
-            38: cvsB,
-            39: cvsF,
-            40: cvsD,
-        },
-        cvsD: {
-            37: cvsE,
-            38: cvsC,
-            39: cvsF,
-            40: cvsA,
-        },
-        cvsE: {
-            37: cvsD,
-            38: cvsA,
-            39: cvsB,
-            40: cvsC,
-        },
-        cvsF: {
-            37: cvsB,
-            38: cvsA,
-            39: cvsD,
-            40: cvsC,
-        }
+        cvsA:
+            {
+                "l": cvsE,
+                "u": cvsD,
+                "r": cvsF,
+                "d": cvsB,
+            },
+        cvsB:
+            {
+                "l": cvsE,
+                "u": cvsA,
+                "r": cvsF,
+                "d": cvsC,
+            },
+        cvsC:
+            {
+                "l": cvsE,
+                "u": cvsB,
+                "r": cvsF,
+                "d": cvsD,
+            },
+        cvsD:
+            {
+                "l": cvsE,
+                "u": cvsC,
+                "r": cvsF,
+                "d": cvsA,
+            },
+        cvsE:
+            {
+                "l": cvsD,
+                "u": cvsA,
+                "r": cvsB,
+                "d": cvsC,
+            },
+        cvsF:
+            {
+                "l": cvsB,
+                "u": cvsA,
+                "r": cvsD,
+                "d": cvsC,
+            }
     };
     var activeCanvas = cvsB;
 
-		var ctx = cvsB.getContext('2d');
+    var ctx = cvsB.getContext('2d');
+    var cellWidth = CANVAS_WIDTH / NUMBER_OF_CELLS;
 
-		for (x = 0; x <= ctx.canvas.width; x += 20) {
-			ctx.moveTo(x, 0);
-			ctx.lineTo(x, ctx.canvas.height);
-			for (y = 0; y <= ctx.canvas.height; y += 20) {
-				ctx.moveTo(0, y);
-				ctx.lineTo(ctx.canvas.width, y);
-			}
-		}
-		ctx.stroke();
+    for (x = 0; x <= ctx.canvas.width; x += cellWidth) {
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, ctx.canvas.height);
+        for (y = 0; y <= ctx.canvas.height; y += cellWidth) {
+            ctx.moveTo(0, y);
+            ctx.lineTo(ctx.canvas.width, y);
+        }
+    }
+    ctx.lineWidth = LINE_WIDTH;
+    ctx.stroke();
 
-		function setColor(canvas, color){
-			canvas.getContext( '2d' ).fillStyle = color;
-			canvas.getContext( '2d' ).fillRect( 0, 0, 100, 100 );
+    /*function fillCellColor(player){
+        var innerCellWidth = CANVAS_WIDTH/NUMBER_OF_CELLS-LINE_WIDTH;
+        player.canvas.getContext( '2d' ).fillStyle = player.color;
+        var startX = player.x*cellWidth+LINE_WIDTH/2;
+        var startY = player.y*cellWidth+LINE_WIDTH/2;
+        player.canvas.getContext( '2d' ).fillRect(startX, startY, startX*cellWidth-LINE_WIDTH/2, startY*cellWidth-LINE_WIDTH/2 );
+    }*/
+    function fillCellColor(player) {
+        var innerCellWidth = CANVAS_WIDTH / NUMBER_OF_CELLS - LINE_WIDTH;
+        var ctx = player.canvas.getContext('2d');
+        ctx.fillStyle = player.color;
+        ctx.fillRect(player.position.x * cellWidth, player.position.y * cellWidth, cellWidth, cellWidth);
 
-            var loader = new THREE.CubeTextureLoader();
-            material.envMap = loader
-                .load([
-                    cvsA.toDataURL('image/png'),
-                    cvsB.toDataURL('image/png'),
-                    cvsC.toDataURL('image/png'),
-                    cvsD.toDataURL('image/png'),
-                    cvsE.toDataURL('image/png'),
-                    cvsF.toDataURL('image/png')
-                ]);
-            material.needsUpdate = true;
-		}
-
-		document.onkeydown = function(event) {
-			//console.log(event.keyCode);
-			//console.log(movement_matrix['cvsA']);
-			//console.log(activeCanvas.id);
-			if([37,38,39,40].includes(event.keyCode)){
-				var newActiveCanvas = movement_matrix[activeCanvas.id][event.keyCode];
-				setColor(newActiveCanvas, 'orange')
-				activeCanvas = newActiveCanvas;
-			}
-
-		};
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(player.position.x * cellWidth, player.position.y * cellWidth, cellWidth, cellWidth);
 
 
+        material.forEach(mat => {mat.needsUpdate = true; console.log(mat.needsUpdate)});
+        //mesh.needsUpdate = true;
+    }
 
+    document.onkeydown = function (event) {
+        // PLAYER 2 joue avec les flèches
+        if ([37, 38, 39, 40].includes(event.keyCode)) {
+            movePlayer(player2, event.keyCode);
+        }
+        // PLAYER 1 joue avec zqsd
+        if ([90, 81, 83, 68].includes(event.keyCode)) {
+            movePlayer(player1, event.keyCode);
+        }
+
+    };
+
+
+    function buildPlayer(color, canvas) {
+        return {
+            color: color,
+            canvas: canvas,
+            // TODO variabiliser cette partie
+            position:
+                {
+                    x: 2,
+                    y: 2,
+                }
+        }
+    }
+
+    function drawGridOnCanvas(canvas) {
+        var ctx = canvas.getContext('2d');
+        var cellWidth = CANVAS_WIDTH / NUMBER_OF_CELLS;
+
+        for (x = 0; x <= ctx.canvas.width; x += cellWidth) {
+            for (y = 0; y <= ctx.canvas.height; y += cellWidth) {
+                ctx.moveTo(x, y);
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(x, y, x + cellWidth, y + cellWidth);
+
+                ctx.strokeStyle = "#000000";
+                ctx.lineWidth = 1;
+                ctx.strokeRect(x, y, x + cellWidth, y + cellWidth);
+            }
+        }
+    }
+
+    function movePlayer(player, keycode) {
+        // ici c'est quand on atteint le bord de la grille
+        /*var newActiveCanvas = movement_matrix[activeCanvas.id][event.keyCode];
+        fillCellColor(newActiveCanvas, 'orange')
+        activeCanvas = newActiveCanvas;*/
+
+        // ON LE BOUGE SUR LE CANVAS SAUF SI ON DEPASSE SES LIMITES ON CHANGE DE CANVAS
+        var movement = "";
+        switch (keycode) {
+            case 37:
+            case 81:
+                // LEFT
+                movement = "l";
+                break;
+            case 38:
+            case 90:
+                // UP
+                movement = "u";
+                break;
+            case 39:
+            case 68:
+                // RIGHT
+                movement = "r";
+                break;
+            case 40:
+            case 83:
+                // DOWN
+                movement = "d";
+                break;
+            default:
+                return;
+        }
+
+
+    }
+
+
+    var player1 = buildPlayer('orange', cvsB);
+    var player2 = buildPlayer('red', cvsA);
+    var player3 = buildPlayer('blue', cvsD);
+    var player4 = buildPlayer('green', cvsC);
+    var player5 = buildPlayer('black', cvsE);
+    drawGridOnCanvas(cvsA);
+    drawGridOnCanvas(cvsB);
+    drawGridOnCanvas(cvsC);
+    drawGridOnCanvas(cvsD);
+    drawGridOnCanvas(cvsE);
+    drawGridOnCanvas(cvsF);
     init();
+
+    fillCellColor(player1);
+    fillCellColor(player2);
+    fillCellColor(player3);
+    fillCellColor(player4);
+    fillCellColor(player5);
+
     animate();
 
     function init() {
@@ -164,8 +264,26 @@
 
         scene = new THREE.Scene();
 
-        material = new THREE.MeshBasicMaterial();
-
+        material = [
+            new THREE.MeshBasicMaterial({
+                map: new THREE.CanvasTexture(cvsF)
+            }),
+            new THREE.MeshBasicMaterial({
+                map: new THREE.CanvasTexture(cvsE)
+            }),
+            new THREE.MeshBasicMaterial({
+                map: new THREE.CanvasTexture(cvsA)
+            }),
+            new THREE.MeshBasicMaterial({
+                map: new THREE.CanvasTexture(cvsC)
+            }),
+            new THREE.MeshBasicMaterial({
+                map: new THREE.CanvasTexture(cvsB)
+            }),
+            new THREE.MeshBasicMaterial({
+                map: new THREE.CanvasTexture(cvsD)
+            })
+        ];
         mesh = new THREE.Mesh(new THREE.BoxBufferGeometry(200, 200, 200), material);
         scene.add(mesh);
 
@@ -175,7 +293,11 @@
         document.body.appendChild(renderer.domElement);
 
         window.addEventListener('resize', onWindowResize, false);
-        setColor(activeCanvas, 'orange');
+
+        // Création du contrôleur
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.minDistance = 200;
+        controls.maxDistance = 1000;
     }
 
     function onWindowResize() {
@@ -187,15 +309,23 @@
 
     }
 
+
+
     function animate() {
-
+        controls.update();
         requestAnimationFrame(animate);
-
-        mesh.rotation.x += 0.01;
-        mesh.rotation.y += 0.01;
-
         renderer.render(scene, camera);
     }
-	</script>
+
+    function getRandomColor() {
+        var letters = '0123456789ABCDEF';
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
+</script>
 </body>
 </html>
