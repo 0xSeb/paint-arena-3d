@@ -111,34 +111,48 @@
     };
     var activeCanvas = cvsB;
 
-    function setColor(canvas, color) {
-        canvas.getContext('2d').fillStyle = color;
-        canvas.getContext('2d').fillRect(0, 0, 100, 100);
+		var ctx = cvsB.getContext('2d');
 
-        var loader = new THREE.CubeTextureLoader();
-        material.envMap = loader
-            .load([
-                cvsA.toDataURL('image/png'),
-                cvsB.toDataURL('image/png'),
-                cvsC.toDataURL('image/png'),
-                cvsD.toDataURL('image/png'),
-                cvsE.toDataURL('image/png'),
-                cvsF.toDataURL('image/png')
-            ]);
-        material.needsUpdate = true;
-    }
+		for (x = 0; x <= ctx.canvas.width; x += 20) {
+			ctx.moveTo(x, 0);
+			ctx.lineTo(x, ctx.canvas.height);
+			for (y = 0; y <= ctx.canvas.height; y += 20) {
+				ctx.moveTo(0, y);
+				ctx.lineTo(ctx.canvas.width, y);
+			}
+		}
+		ctx.stroke();
 
-    document.onkeydown = function (event) {
-        //console.log(event.keyCode);
-        //console.log(movement_matrix['cvsA']);
-        //console.log(activeCanvas.id);
-        if ([37, 38, 39, 40].includes(event.keyCode)) {
-            var newActiveCanvas = movement_matrix[activeCanvas.id][event.keyCode];
-            setColor(newActiveCanvas, 'orange')
-            activeCanvas = newActiveCanvas;
-        }
+		function setColor(canvas, color){
+			canvas.getContext( '2d' ).fillStyle = color;
+			canvas.getContext( '2d' ).fillRect( 0, 0, 100, 100 );
 
-    };
+            var loader = new THREE.CubeTextureLoader();
+            material.envMap = loader
+                .load([
+                    cvsA.toDataURL('image/png'),
+                    cvsB.toDataURL('image/png'),
+                    cvsC.toDataURL('image/png'),
+                    cvsD.toDataURL('image/png'),
+                    cvsE.toDataURL('image/png'),
+                    cvsF.toDataURL('image/png')
+                ]);
+            material.needsUpdate = true;
+		}
+
+		document.onkeydown = function(event) {
+			//console.log(event.keyCode);
+			//console.log(movement_matrix['cvsA']);
+			//console.log(activeCanvas.id);
+			if([37,38,39,40].includes(event.keyCode)){
+				var newActiveCanvas = movement_matrix[activeCanvas.id][event.keyCode];
+				setColor(newActiveCanvas, 'orange')
+				activeCanvas = newActiveCanvas;
+			}
+
+		};
+
+
 
     init();
     animate();
@@ -182,30 +196,6 @@
 
         renderer.render(scene, camera);
     }
-
-    function dataURItoBlob(dataURI) {
-        // convert base64 to raw binary data held in a string
-        // doesn't handle URLEncoded DataURIs - see SO answer #6850276 for code that does this
-        var byteString = atob(dataURI.split(',')[1]);
-
-        // separate out the mime component
-        var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0]
-
-        // write the bytes of the string to an ArrayBuffer
-        var ab = new ArrayBuffer(byteString.length);
-
-        // create a view into the buffer
-        var ia = new Uint8Array(ab);
-
-        // set the bytes of the buffer to the correct values
-        for (var i = 0; i < byteString.length; i++) {
-            ia[i] = byteString.charCodeAt(i);
-        }
-
-        // write the ArrayBuffer to a blob, and you're done
-        var blob = new Blob([ab], {type: mimeString});
-        return blob;
-    }
-</script>
+	</script>
 </body>
 </html>
