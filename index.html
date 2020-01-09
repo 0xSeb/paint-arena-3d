@@ -100,9 +100,12 @@
 			//console.log(event.keyCode);
 			//console.log(movement_matrix['cvsA']);
 			//console.log(activeCanvas.id);
-			var newActiveCanvas = movement_matrix[activeCanvas.id][event.keyCode];
-			setColor(newActiveCanvas, 'orange');
-			activeCanvas = newActiveCanvas;
+			if([37,38,39,40].includes(event.keyCode)){
+				var newActiveCanvas = movement_matrix[activeCanvas.id][event.keyCode];
+				setColor(newActiveCanvas, 'orange')
+				activeCanvas = newActiveCanvas;
+			}
+
 		};
 
 
