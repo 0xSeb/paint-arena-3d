@@ -6,7 +6,6 @@
     <style>
         body {
             margin: 0;
-            overflow: hidden;
         }
 
         canvas {
@@ -27,32 +26,32 @@
         <tr>
             <td></td>
             <td>
-                <canvas id="cvsA" height="64" width="64"></canvas>
+                <canvas id="cvsA" height="512" width="512"></canvas>
             </td>
             <td></td>
         </tr>
         <tr>
             <td>
-                <canvas id="cvsE" height="64" width="64"></canvas>
+                <canvas id="cvsE" height="512" width="512"></canvas>
             </td>
             <td>
-                <canvas id="cvsB" height="64" width="64"></canvas>
+                <canvas id="cvsB" height="512" width="512"></canvas>
             </td>
             <td>
-                <canvas id="cvsF" height="64" width="64"></canvas>
+                <canvas id="cvsF" height="512" width="512"></canvas>
             </td>
         </tr>
         <tr>
             <td></td>
             <td>
-                <canvas id="cvsC" height="64" width="64"></canvas>
+                <canvas id="cvsC" height="512" width="512"></canvas>
             </td>
             <td></td>
         </tr>
         <tr>
             <td></td>
             <td>
-                <canvas id="cvsD" height="64" width="64"></canvas>
+                <canvas id="cvsD" height="512" width="512"></canvas>
             </td>
             <td></td>
         </tr>
@@ -64,9 +63,9 @@
 <script>
     var camera, scene, renderer, mesh, material, controls;
     var drawStartPos = new THREE.Vector2();
-    const CANVAS_WIDTH = 64;
-    const NUMBER_OF_CELLS = 5;
-    const LINE_WIDTH = 1;
+    const CANVAS_WIDTH = 512;
+    const NUMBER_OF_CELLS = 20;
+    const LINE_WIDTH = 0.01;
     var cvsA = document.getElementById('cvsA');
     var cvsB = document.getElementById('cvsB');
     var cvsC = document.getElementById('cvsC');
@@ -317,14 +316,7 @@
         renderer.render(scene, camera);
     }
 
-    function getRandomColor() {
-        var letters = '0123456789ABCDEF';
-        var color = '#';
-        for (var i = 0; i < 6; i++) {
-            color += letters[Math.floor(Math.random() * 16)];
-        }
-        return color;
-    }
+
 
 </script>
 </body>
