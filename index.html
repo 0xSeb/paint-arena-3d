@@ -41,6 +41,8 @@
 			<td></td>
 		</tr>
 	</table>
+
+
 	<script>
 		var cvsA = document.getElementById( 'cvsA' );
 		var cvsB = document.getElementById( 'cvsB' );
@@ -89,7 +91,17 @@
 		};
 		var activeCanvas = cvsB;
 
-		setColor(activeCanvas, 'orange');
+		var ctx = cvsB.getContext('2d');
+
+		for (x = 0; x <= ctx.canvas.width; x += 20) {
+			ctx.moveTo(x, 0);
+			ctx.lineTo(x, ctx.canvas.height);
+			for (y = 0; y <= ctx.canvas.height; y += 20) {
+				ctx.moveTo(0, y);
+				ctx.lineTo(ctx.canvas.width, y);
+			}
+		}
+		ctx.stroke();
 
 		function setColor(canvas, color){
 			canvas.getContext( '2d' ).fillStyle = color;
@@ -105,10 +117,8 @@
 				setColor(newActiveCanvas, 'orange')
 				activeCanvas = newActiveCanvas;
 			}
-
+			
 		};
-
-
 	</script>
 </body>
 </html>
