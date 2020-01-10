@@ -5,7 +5,7 @@
     <title>three.js app</title>
     <style>
         body {
-            overflow: hidden;
+            /*overflow: hidden;*/
             margin: 0;
         }
 
@@ -74,50 +74,7 @@
     var cvsE = document.getElementById('cvsE');
     var cvsF = document.getElementById('cvsF');
 
-    /*    var movement_matrix = {
-            cvsA:
-                {
-                    "l": cvsE,
-                    "u": cvsD,
-                    "r": cvsF,
-                    "d": cvsB,
-                },
-            cvsB:
-                {
-                    "l": cvsE,
-                    "u": cvsA,
-                    "r": cvsF,
-                    "d": cvsC,
-                },
-            cvsC:
-                {
-                    "l": cvsE,
-                    "u": cvsB,
-                    "r": cvsF,
-                    "d": cvsD,
-                },
-            cvsD:
-                {
-                    "l": cvsE,
-                    "u": cvsC,
-                    "r": cvsF,
-                    "d": cvsA,
-                },
-            cvsE:
-                {
-                    "l": cvsD,
-                    "u": cvsA,
-                    "r": cvsB,
-                    "d": cvsC,
-                },
-            cvsF:
-                {
-                    "l": cvsB,
-                    "u": cvsA,
-                    "r": cvsD,
-                    "d": cvsC,
-                }
-        };*/
+
 
     function swap(x, y) {
         var a = x;
@@ -245,7 +202,9 @@
                 "l": (p) => {
                     p.canvas = cvsD;
                     p.position.y = NUMBER_OF_CELLS - 1 - p.position.y;
-                    p.position.x = NUMBER_OF_CELLS - 1;
+                    p.position.x = 0;
+                    rotateMovementClockwise(p);
+                    rotateMovementClockwise(p);
                 },
                 "u": (p) => {
                     p.canvas = cvsA;
@@ -280,7 +239,11 @@
                 "r": (p) => {
                     p.canvas = cvsD;
                     p.position.y = NUMBER_OF_CELLS - 1 - p.position.y;
-                    p.position.x = 0;
+                    p.position.x =  NUMBER_OF_CELLS - 1;
+                    rotateMovementAntiClockwise(p);
+                    rotateMovementAntiClockwise(p);
+
+
                 },
                 "d": (p) => {
                     p.canvas = cvsC;
@@ -308,13 +271,7 @@
     ctx.lineWidth = LINE_WIDTH;
     ctx.stroke();
 
-    /*function fillCellColor(player){
-        var innerCellWidth = CANVAS_WIDTH/NUMBER_OF_CELLS-LINE_WIDTH;
-        player.canvas.getContext( '2d' ).fillStyle = player.color;
-        var startX = player.x*cellWidth+LINE_WIDTH/2;
-        var startY = player.y*cellWidth+LINE_WIDTH/2;
-        player.canvas.getContext( '2d' ).fillRect(startX, startY, startX*cellWidth-LINE_WIDTH/2, startY*cellWidth-LINE_WIDTH/2 );
-    }*/
+
     function fillCellColor(player) {
         var innerCellWidth = CANVAS_WIDTH / NUMBER_OF_CELLS - LINE_WIDTH;
         var ctx = player.canvas.getContext('2d');
@@ -327,7 +284,7 @@
 
 
         material.forEach(mat => {
-            mat.needsUpdate = true;
+            mat.map.needsUpdate = true;
         });
         //mesh.needsUpdate = true;
     }
@@ -468,13 +425,6 @@
 
     function leaveCanvas(player) {
         if (player.position.x < 0 || player.position.x >= NUMBER_OF_CELLS || player.position.y < 0 || player.position.y >= NUMBER_OF_CELLS) {
-            console.log(true);
-
-            console.log("__________________");
-            console.log(player.position.x < 0);
-            console.log(player.position.x >= NUMBER_OF_CELLS);
-            console.log(player.position.y < 0);
-            console.log(player.position.y >= NUMBER_OF_CELLS);
             return true;
         }
         return false;
@@ -511,6 +461,7 @@
         var backFace = new THREE.CanvasTexture(cvsD);
         backFace.center = new THREE.Vector2(0.5, 0.5);
         backFace.rotation = Math.PI;
+
         material = [
             new THREE.MeshBasicMaterial({
                 map: new THREE.CanvasTexture(cvsF)
@@ -530,6 +481,7 @@
             new THREE.MeshBasicMaterial({
                 map: backFace
             })
+
         ];
         mesh = new THREE.Mesh(new THREE.BoxBufferGeometry(200, 200, 200), material);
         scene.add(mesh);
@@ -559,6 +511,9 @@
 
     function animate() {
         controls.update();
+       /* material.forEach(mat => {
+           console.log(mat.needsUpdate);
+        });*/
         requestAnimationFrame(animate);
         renderer.render(scene, camera);
     }
