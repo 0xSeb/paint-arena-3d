@@ -62,18 +62,21 @@
     <canvas id="cvs3D"></canvas>
 </div>
 <script>
-    var camera, scene, renderer, mesh, material, controls;
+    var camera, scene, renderer, mesh, material, controls, cubeRotationX, cubeRotationY;
     var drawStartPos = new THREE.Vector2();
+    cubeRotationX = 0;
+    cubeRotationY = 0;
     const CANVAS_WIDTH = 512;
     const NUMBER_OF_CELLS = 20;
     const LINE_WIDTH = 0.01;
+    // const QUARTER_ROTATION = Math.PI/2;
+    const QUARTER_ROTATION = 90;
     var cvsA = document.getElementById('cvsA');
     var cvsB = document.getElementById('cvsB');
     var cvsC = document.getElementById('cvsC');
     var cvsD = document.getElementById('cvsD');
     var cvsE = document.getElementById('cvsE');
     var cvsF = document.getElementById('cvsF');
-
 
 
     function swap(x, y) {
@@ -113,20 +116,24 @@
                     p.position.x = p.position.y;
                     p.position.y = 0;
                     rotateMovementAntiClockwise(p);
+                    cubeRotationY -= QUARTER_ROTATION;
                 },
                 "u": (p) => {
                     p.canvas = cvsD;
                     p.position.y = NUMBER_OF_CELLS - 1;
+                    cubeRotationX += QUARTER_ROTATION;
                 },
                 "r": (p) => {
                     p.canvas = cvsF;
                     p.position.x = NUMBER_OF_CELLS - 1 - p.position.y;
                     p.position.y = 0;
                     rotateMovementClockwise(p);
+                    cubeRotationY += QUARTER_ROTATION;
                 },
                 "d": (p) => {
                     p.canvas = cvsB;
                     p.position.y = 0;
+                    cubeRotationX -= QUARTER_ROTATION;
                 },
             },
         cvsB:
@@ -134,18 +141,22 @@
                 "l": (p) => {
                     p.canvas = cvsE;
                     p.position.x = NUMBER_OF_CELLS - 1;
+                    cubeRotationY -= QUARTER_ROTATION;
                 },
                 "u": (p) => {
                     p.canvas = cvsA;
                     p.position.y = NUMBER_OF_CELLS - 1;
+                    cubeRotationX += QUARTER_ROTATION;
                 },
                 "r": (p) => {
                     p.canvas = cvsF;
                     p.position.x = 0;
+                    cubeRotationY += QUARTER_ROTATION;
                 },
                 "d": (p) => {
                     p.canvas = cvsC;
                     p.position.y = 0;
+                    cubeRotationX -= QUARTER_ROTATION;
                 },
             },
         cvsC:
@@ -159,6 +170,7 @@
                 "u": (p) => {
                     p.canvas = cvsB;
                     p.position.y = NUMBER_OF_CELLS - 1;
+                    cubeRotationX += QUARTER_ROTATION;
                 },
                 "r": (p) => {
                     p.canvas = cvsF;
@@ -170,6 +182,7 @@
                 "d": (p) => {
                     p.canvas = cvsD;
                     p.position.y = 0;
+                    cubeRotationX -= QUARTER_ROTATION;
                 },
             },
         cvsD:
@@ -180,10 +193,12 @@
                     p.position.y = NUMBER_OF_CELLS - 1 - p.position.y;
                     rotateMovementClockwise(p);
                     rotateMovementClockwise(p);
+                    cubeRotationY += QUARTER_ROTATION;
                 },
                 "u": (p) => {
                     p.canvas = cvsC;
                     p.position.y = NUMBER_OF_CELLS - 1;
+                    cubeRotationX += QUARTER_ROTATION;
                 },
                 "r": (p) => {
                     p.canvas = cvsF;
@@ -191,10 +206,12 @@
                     p.position.y = NUMBER_OF_CELLS - 1 - p.position.y;
                     rotateMovementClockwise(p);
                     rotateMovementClockwise(p);
+                    cubeRotationY -= QUARTER_ROTATION;
                 },
                 "d": (p) => {
                     p.canvas = cvsA;
                     p.position.y = 0;
+                    cubeRotationX -= QUARTER_ROTATION;
                 },
             },
         cvsE:
@@ -205,6 +222,7 @@
                     p.position.x = 0;
                     rotateMovementClockwise(p);
                     rotateMovementClockwise(p);
+                    cubeRotationY -= QUARTER_ROTATION;
                 },
                 "u": (p) => {
                     p.canvas = cvsA;
@@ -216,6 +234,7 @@
                 "r": (p) => {
                     p.canvas = cvsB;
                     p.position.x = 0;
+                    cubeRotationY += QUARTER_ROTATION;
                 },
                 "d": (p) => {
                     p.canvas = cvsC;
@@ -229,6 +248,7 @@
                 "l": (p) => {
                     p.canvas = cvsB;
                     p.position.x = NUMBER_OF_CELLS - 1;
+                    cubeRotationY -= QUARTER_ROTATION;
                 },
                 "u": (p) => {
                     p.canvas = cvsA;
@@ -239,9 +259,10 @@
                 "r": (p) => {
                     p.canvas = cvsD;
                     p.position.y = NUMBER_OF_CELLS - 1 - p.position.y;
-                    p.position.x =  NUMBER_OF_CELLS - 1;
+                    p.position.x = NUMBER_OF_CELLS - 1;
                     rotateMovementAntiClockwise(p);
                     rotateMovementAntiClockwise(p);
+                    cubeRotationY += QUARTER_ROTATION;
 
 
                 },
@@ -286,6 +307,8 @@
         material.forEach(mat => {
             mat.map.needsUpdate = true;
         });
+
+
         //mesh.needsUpdate = true;
     }
 
@@ -511,9 +534,63 @@
 
     function animate() {
         controls.update();
-       /* material.forEach(mat => {
-           console.log(mat.needsUpdate);
-        });*/
+        /* material.forEach(mat => {
+            console.log(mat.needsUpdate);
+         });*/
+       /* if (cubeRotationX >= 360) cubeRotationX = 0;
+        if (cubeRotationY >= 360) cubeRotationY = 0;
+        console.log(mesh.rotation.x, cubeRotationX);
+
+
+        if (cubeRotationX <= 180) {
+            if (THREE.Math.radToDeg(mesh.rotation.x) < cubeRotationX + 0.6 && THREE.Math.radToDeg(mesh.rotation.x) > cubeRotationX - 0.6) {
+                mesh.rotation.x = THREE.Math.degToRad(cubeRotationX);
+            } else {
+                mesh.rotateX(0.01);
+            }
+        } else {
+            if (360 - Math.abs(THREE.Math.radToDeg(mesh.rotation.x)) > 268 && 360 - Math.abs(THREE.Math.radToDeg(mesh.rotation.x)) < 272) {
+                mesh.rotation.x =  THREE.Math.degToRad(270);
+            }
+            if (360 - Math.abs(THREE.Math.radToDeg(mesh.rotation.x)) < cubeRotationX + 0.6 && 360 - Math.abs(THREE.Math.radToDeg(mesh.rotation.x)) > cubeRotationX - 0.6) {
+                mesh.rotation.x = THREE.Math.degToRad(cubeRotationX);
+            } else {
+                mesh.rotateX(0.01);
+            }
+        }
+
+        if (cubeRotationY <= 180) {
+            if (THREE.Math.radToDeg(mesh.rotation.y) < cubeRotationY + 0.6 && THREE.Math.radToDeg(mesh.rotation.y) > cubeRotationY - 0.6) {
+                mesh.rotation.y = THREE.Math.degToRad(cubeRotationY);
+            } else {
+                mesh.rotateY(0.01);
+            }
+        } else {
+            if (360 - Math.abs(THREE.Math.radToDeg(mesh.rotation.y)) > 268 && 360 - Math.abs(THREE.Math.radToDeg(mesh.rotation.y)) < 272) {
+                mesh.rotation.y =  THREE.Math.degToRad(270);
+            }
+            if (360 - Math.abs(THREE.Math.radToDeg(mesh.rotation.y)) < cubeRotationY + 0.6 && 360 - Math.abs(THREE.Math.radToDeg(mesh.rotation.y)) > cubeRotationY - 0.6) {
+                mesh.rotation.y = THREE.Math.degToRad(cubeRotationY);
+            } else {
+                mesh.rotateY(0.01);
+            }
+        }
+*/
+        /*if(mesh.rotation.x > 0 && mesh.rotation.x < Math.PI){
+            if (mes.rotation.x < cubeRotationX)
+            if(Math.abs(mesh.rotation.x) < cubeRotationX + 0.02 && Math.abs(mesh.rotation.x) > cubeRotationX - 0.02){
+                mesh.rotation.x = cubeRotationX;
+            }else{
+                mesh.rotateX(0.01);
+            }
+        }else if(mesh.rotation.x > cubeRotationX){
+            mesh.rotateX(-0.01);
+        }
+        if(mesh.rotation.y < cubeRotationY ){
+            mesh.rotateY(0.01);
+        }else if(mesh.rotation.y > cubeRotationY){
+            mesh.rotateY(-0.01);
+        }*/
         requestAnimationFrame(animate);
         renderer.render(scene, camera);
     }
