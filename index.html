@@ -62,8 +62,7 @@
     <canvas id="cvs3D"></canvas>
 </div>
 <script>
-    var camera, scene, renderer, mesh, material, controls, cubeRotationX, cubeRotationY;
-    var drawStartPos = new THREE.Vector2();
+    var camera, scene, renderer, mesh, material, controls, cubeRotationX, cubeRotationY, quaternion;
     cubeRotationX = 0;
     cubeRotationY = 0;
     const CANVAS_WIDTH = 512;
@@ -478,6 +477,8 @@
     function init() {
 
         camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 2000);
+        camera.position.x = -200;
+        camera.position.y = 200;
         camera.position.z = 500;
 
         scene = new THREE.Scene();
@@ -507,12 +508,19 @@
 
         ];
         mesh = new THREE.Mesh(new THREE.BoxBufferGeometry(200, 200, 200), material);
+        var axes = new THREE.AxesHelper(250);
+        mesh.add(axes);
         scene.add(mesh);
+
+        quaternion = new THREE.Quaternion();
+        quaternion.setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), Math.PI / 2 );
 
         renderer = new THREE.WebGLRenderer({antialias: true, canvas: document.getElementById('cvs3D')});
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
+
+        camera.lookAt(mesh.position);
 
         window.addEventListener('resize', onWindowResize, false);
 
@@ -534,6 +542,11 @@
 
     function animate() {
         controls.update();
+
+        if (quaternion != null && mesh.quaternion !== quaternion) {
+            mesh.quaternion.rotateTowards(quaternion, 0.01);
+        }
+
         /* material.forEach(mat => {
             console.log(mat.needsUpdate);
          });*/
