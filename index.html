@@ -5,6 +5,7 @@
     <title>three.js app</title>
     <style>
         body {
+            overflow: hidden;
             margin: 0;
         }
 
@@ -73,50 +74,224 @@
     var cvsE = document.getElementById('cvsE');
     var cvsF = document.getElementById('cvsF');
 
+    /*    var movement_matrix = {
+            cvsA:
+                {
+                    "l": cvsE,
+                    "u": cvsD,
+                    "r": cvsF,
+                    "d": cvsB,
+                },
+            cvsB:
+                {
+                    "l": cvsE,
+                    "u": cvsA,
+                    "r": cvsF,
+                    "d": cvsC,
+                },
+            cvsC:
+                {
+                    "l": cvsE,
+                    "u": cvsB,
+                    "r": cvsF,
+                    "d": cvsD,
+                },
+            cvsD:
+                {
+                    "l": cvsE,
+                    "u": cvsC,
+                    "r": cvsF,
+                    "d": cvsA,
+                },
+            cvsE:
+                {
+                    "l": cvsD,
+                    "u": cvsA,
+                    "r": cvsB,
+                    "d": cvsC,
+                },
+            cvsF:
+                {
+                    "l": cvsB,
+                    "u": cvsA,
+                    "r": cvsD,
+                    "d": cvsC,
+                }
+        };*/
+
+    function swap(x, y) {
+        var a = x;
+        x = y;
+        y = a;
+        return {x: x, y: y};
+    }
+
+    function rotateMovementClockwise(p) {
+        var u = p.movement.up;
+        var r = p.movement.right;
+        var d = p.movement.down;
+        var l = p.movement.left;
+        p.movement.up = r;
+        p.movement.right = d;
+        p.movement.down = l;
+        p.movement.left = u;
+    }
+
+    function rotateMovementAntiClockwise(p) {
+        var u = p.movement.up;
+        var r = p.movement.right;
+        var d = p.movement.down;
+        var l = p.movement.left;
+        p.movement.up = l;
+        p.movement.right = u;
+        p.movement.down = r;
+        p.movement.left = d;
+    }
+
     var movement_matrix = {
         cvsA:
             {
-                "l": cvsE,
-                "u": cvsD,
-                "r": cvsF,
-                "d": cvsB,
+                "l": (p) => {
+                    p.canvas = cvsE;
+                    p.position.x = p.position.y;
+                    p.position.y = 0;
+                    rotateMovementAntiClockwise(p);
+                },
+                "u": (p) => {
+                    p.canvas = cvsD;
+                    p.position.y = NUMBER_OF_CELLS - 1;
+                },
+                "r": (p) => {
+                    p.canvas = cvsF;
+                    p.position.x = NUMBER_OF_CELLS - 1 - p.position.y;
+                    p.position.y = 0;
+                    rotateMovementClockwise(p);
+                },
+                "d": (p) => {
+                    p.canvas = cvsB;
+                    p.position.y = 0;
+                },
             },
         cvsB:
             {
-                "l": cvsE,
-                "u": cvsA,
-                "r": cvsF,
-                "d": cvsC,
+                "l": (p) => {
+                    p.canvas = cvsE;
+                    p.position.x = NUMBER_OF_CELLS - 1;
+                },
+                "u": (p) => {
+                    p.canvas = cvsA;
+                    p.position.y = NUMBER_OF_CELLS - 1;
+                },
+                "r": (p) => {
+                    p.canvas = cvsF;
+                    p.position.x = 0;
+                },
+                "d": (p) => {
+                    p.canvas = cvsC;
+                    p.position.y = 0;
+                },
             },
         cvsC:
             {
-                "l": cvsE,
-                "u": cvsB,
-                "r": cvsF,
-                "d": cvsD,
+                "l": (p) => {
+                    p.canvas = cvsE;
+                    p.position.x = NUMBER_OF_CELLS - 1 - p.position.y;
+                    p.position.y = NUMBER_OF_CELLS - 1;
+                    rotateMovementClockwise(p);
+                },
+                "u": (p) => {
+                    p.canvas = cvsB;
+                    p.position.y = NUMBER_OF_CELLS - 1;
+                },
+                "r": (p) => {
+                    p.canvas = cvsF;
+                    var {x, y} = swap(p.position.x, p.position.y);
+                    p.position.x = x;
+                    p.position.y = y;
+                    rotateMovementAntiClockwise(p);
+                },
+                "d": (p) => {
+                    p.canvas = cvsD;
+                    p.position.y = 0;
+                },
             },
         cvsD:
             {
-                "l": cvsE,
-                "u": cvsC,
-                "r": cvsF,
-                "d": cvsA,
+                "l": (p) => {
+                    p.canvas = cvsE;
+                    p.position.x = 0;
+                    p.position.y = NUMBER_OF_CELLS - 1 - p.position.y;
+                    rotateMovementClockwise(p);
+                    rotateMovementClockwise(p);
+                },
+                "u": (p) => {
+                    p.canvas = cvsC;
+                    p.position.y = NUMBER_OF_CELLS - 1;
+                },
+                "r": (p) => {
+                    p.canvas = cvsF;
+                    p.position.x = NUMBER_OF_CELLS - 1;
+                    p.position.y = NUMBER_OF_CELLS - 1 - p.position.y;
+                    rotateMovementClockwise(p);
+                    rotateMovementClockwise(p);
+                },
+                "d": (p) => {
+                    p.canvas = cvsA;
+                    p.position.y = 0;
+                },
             },
         cvsE:
             {
-                "l": cvsD,
-                "u": cvsA,
-                "r": cvsB,
-                "d": cvsC,
+                "l": (p) => {
+                    p.canvas = cvsD;
+                    p.position.y = NUMBER_OF_CELLS - 1 - p.position.y;
+                    p.position.x = NUMBER_OF_CELLS - 1;
+                },
+                "u": (p) => {
+                    p.canvas = cvsA;
+                    var {x, y} = swap(p.position.x, p.position.y);
+                    p.position.x = x;
+                    p.position.y = y;
+                    rotateMovementClockwise(p);
+                },
+                "r": (p) => {
+                    p.canvas = cvsB;
+                    p.position.x = 0;
+                },
+                "d": (p) => {
+                    p.canvas = cvsC;
+                    p.position.y = NUMBER_OF_CELLS - 1 - p.position.x;
+                    p.position.x = 0;
+                    rotateMovementAntiClockwise(p);
+                },
             },
         cvsF:
             {
-                "l": cvsB,
-                "u": cvsA,
-                "r": cvsD,
-                "d": cvsC,
+                "l": (p) => {
+                    p.canvas = cvsB;
+                    p.position.x = NUMBER_OF_CELLS - 1;
+                },
+                "u": (p) => {
+                    p.canvas = cvsA;
+                    p.position.y = NUMBER_OF_CELLS - 1 - p.position.x;
+                    p.position.x = NUMBER_OF_CELLS - 1;
+                    rotateMovementAntiClockwise(p);
+                },
+                "r": (p) => {
+                    p.canvas = cvsD;
+                    p.position.y = NUMBER_OF_CELLS - 1 - p.position.y;
+                    p.position.x = 0;
+                },
+                "d": (p) => {
+                    p.canvas = cvsC;
+                    var {x, y} = swap(p.position.x, p.position.y);
+                    p.position.x = x;
+                    p.position.y = y;
+                    rotateMovementClockwise(p);
+                },
             }
     };
+
     var activeCanvas = cvsB;
 
     var ctx = cvsB.getContext('2d');
@@ -151,7 +326,9 @@
         ctx.strokeRect(player.position.x * cellWidth, player.position.y * cellWidth, cellWidth, cellWidth);
 
 
-        material.forEach(mat => {mat.needsUpdate = true; console.log(mat.needsUpdate)});
+        material.forEach(mat => {
+            mat.needsUpdate = true;
+        });
         //mesh.needsUpdate = true;
     }
 
@@ -173,11 +350,16 @@
             color: color,
             canvas: canvas,
             // TODO variabiliser cette partie
-            position:
-                {
-                    x: 2,
-                    y: 2,
-                }
+            position: {
+                x: 2,
+                y: 2,
+            },
+            movement: {
+                left: "l",
+                right: "r",
+                up: "u",
+                down: "d"
+            }
         }
     }
 
@@ -198,6 +380,23 @@
         }
     }
 
+    function updatePlayerCoordinates(player, movement) {
+        switch (movement) {
+            case "l":
+                player.position.x -= 1;
+                break;
+            case "u":
+                player.position.y -= 1;
+                break;
+            case "r":
+                player.position.x += 1;
+                break;
+            case "d":
+                player.position.y += 1;
+                break;
+        }
+    }
+
     function movePlayer(player, keycode) {
         // ici c'est quand on atteint le bord de la grille
         /*var newActiveCanvas = movement_matrix[activeCanvas.id][event.keyCode];
@@ -206,32 +405,79 @@
 
         // ON LE BOUGE SUR LE CANVAS SAUF SI ON DEPASSE SES LIMITES ON CHANGE DE CANVAS
         var movement = "";
+        // TODO VERIFIER COLISIONS PLAYER
         switch (keycode) {
             case 37:
             case 81:
                 // LEFT
-                movement = "l";
+                movement = player.movement.left;
+                updatePlayerCoordinates(player, movement);
+                if (leaveCanvas(player)) {
+                    // calculer sa position avant
+                    //player.canvas = movement_matrix[player.canvas.id][movement];
+                    movement_matrix[player.canvas.id][movement](player);
+                    // peindre la cell ?
+                }
+                fillCellColor(player);
                 break;
             case 38:
             case 90:
                 // UP
-                movement = "u";
+                movement = player.movement.up;
+                updatePlayerCoordinates(player, movement);
+                if (leaveCanvas(player)) {
+                    // calculer sa position avant
+                    //player.canvas = movement_matrix[player.canvas.id][movement];
+                    movement_matrix[player.canvas.id][movement](player);
+                    // peindre la cell ?
+                }
+                fillCellColor(player);
                 break;
             case 39:
             case 68:
                 // RIGHT
-                movement = "r";
+                movement = player.movement.right;
+                updatePlayerCoordinates(player, movement);
+                if (leaveCanvas(player)) {
+                    // calculer sa position avant
+                    //player.canvas = movement_matrix[player.canvas.id][movement];
+                    movement_matrix[player.canvas.id][movement](player);
+                    // peindre la cell ?
+                }
+                fillCellColor(player);
                 break;
             case 40:
             case 83:
                 // DOWN
-                movement = "d";
+                movement = player.movement.down;
+                updatePlayerCoordinates(player, movement);
+                if (leaveCanvas(player)) {
+                    // calculer sa position avant
+                    //player.canvas = movement_matrix[player.canvas.id][movement];
+                    movement_matrix[player.canvas.id][movement](player);
+                    // peindre la cell ?
+                }
+                fillCellColor(player);
                 break;
             default:
                 return;
         }
 
 
+    }
+
+    function leaveCanvas(player) {
+        if (player.position.x < 0 || player.position.x >= NUMBER_OF_CELLS || player.position.y < 0 || player.position.y >= NUMBER_OF_CELLS) {
+            console.log(true);
+
+            console.log("__________________");
+            console.log(player.position.x < 0);
+            console.log(player.position.x >= NUMBER_OF_CELLS);
+            console.log(player.position.y < 0);
+            console.log(player.position.y >= NUMBER_OF_CELLS);
+            return true;
+        }
+        return false;
     }
 
 
@@ -262,7 +508,9 @@
         camera.position.z = 500;
 
         scene = new THREE.Scene();
-
+        var backFace = new THREE.CanvasTexture(cvsD);
+        backFace.center = new THREE.Vector2(0.5, 0.5);
+        backFace.rotation = Math.PI;
         material = [
             new THREE.MeshBasicMaterial({
                 map: new THREE.CanvasTexture(cvsF)
@@ -280,7 +528,7 @@
                 map: new THREE.CanvasTexture(cvsB)
             }),
             new THREE.MeshBasicMaterial({
-                map: new THREE.CanvasTexture(cvsD)
+                map: backFace
             })
         ];
         mesh = new THREE.Mesh(new THREE.BoxBufferGeometry(200, 200, 200), material);
@@ -309,13 +557,11 @@
     }
 
 
-
     function animate() {
         controls.update();
         requestAnimationFrame(animate);
         renderer.render(scene, camera);
     }
-
 
 
 </script>
