@@ -61,15 +61,18 @@
 <div>
     <canvas id="cvs3D"></canvas>
 </div>
-<script>
-    var camera, scene, renderer, mesh, material, controls, rotationAxis;
 
+
+<script>
+    var camera, scene, renderer, playgroundMesh, material, controls, rotationAxis, playerMesh, cubesGroup;
     const WORLD_AXIS_X = new THREE.Vector3(1, 0, 0);
     const WORL_AXIS_Y = new THREE.Vector3(0, 1, 0);
     const CANVAS_WIDTH = 512;
     const NUMBER_OF_CELLS = 10;
     const CUBE_ROTATION_SPEED = 5;
     const CELL_WIDTH = CANVAS_WIDTH / NUMBER_OF_CELLS;
+    const CUBE_WIDTH = 200;
+    const PLAYER_CUBE_WIDTH = CUBE_WIDTH / NUMBER_OF_CELLS;
     const CVS_A = document.getElementById('cvsA');
     const CVS_B = document.getElementById('cvsB');
     const CVS_C = document.getElementById('cvsC');
@@ -79,6 +82,8 @@
 
     var rotationValueX = 0;
     var rotationValueY = 0;
+    var rotationValuePlayerX = 0;
+    var rotationValuePlayerY = 0;
     var player1 = buildPlayer('orange', CVS_B);
     var player2 = buildPlayer('red', CVS_A);
     var player3 = buildPlayer('blue', CVS_D);
@@ -305,6 +310,52 @@
         }
     }
 
+    function buildCubePlayer(player) {
+        var geometryPlayground = new THREE.BoxBufferGeometry(PLAYER_CUBE_WIDTH, PLAYER_CUBE_WIDTH, PLAYER_CUBE_WIDTH);
+        var material = new THREE.MeshBasicMaterial({color: player.color});
+        var mesh = new THREE.Mesh(geometryPlayground, material);
+        mesh.position.z = CUBE_WIDTH/2+PLAYER_CUBE_WIDTH/2;
+        mesh.position.x = -1*2*PLAYER_CUBE_WIDTH-PLAYER_CUBE_WIDTH/2;
+        mesh.position.y = 2*PLAYER_CUBE_WIDTH+PLAYER_CUBE_WIDTH/2;
+        mesh.geometry.translate(10,10,10);
+        mesh.position.x -= 10;
+        mesh.position.y -= 10;
+        mesh.position.z -= 10;
+        var axes = new THREE.AxesHelper(500);
+        mesh.add(axes);
+        return mesh;
+    }
+
+    function moveCubePlayer(player, keycode) {
+
+        switch (keycode) {
+            case 37:
+            case 81:
+                // LEFT
+                player.position.x -= PLAYER_CUBE_WIDTH;
+
+                break;
+            case 38:
+            case 90:
+                // UP
+                player.position.y += PLAYER_CUBE_WIDTH;
+                break;
+            case 39:
+            case 68:
+                // RIGHT
+                player.position.x += PLAYER_CUBE_WIDTH;
+                break;
+            case 40:
+            case 83:
+                // DOWN
+                player.position.y -= PLAYER_CUBE_WIDTH;
+
+                break;
+            default:
+                return;
+        }
+    }
+
     function drawGridOnCanvas(canvas) {
         var ctx = canvas.getContext('2d');
         var cellWidth = CANVAS_WIDTH / NUMBER_OF_CELLS;
@@ -365,6 +416,7 @@
                     movement_matrix[player.canvas.id][movement](player);
                     rotationAxis = WORLD_AXIS_X;
                     rotationValueX += 90;
+                    rotationValuePlayerX += 90;
                 }
 
                 fillCellColor(player);
@@ -427,6 +479,7 @@
             // PLAYER 1 joue avec zqsd
             if ([90, 81, 83, 68].includes(event.keyCode)) {
                 movePlayer(player1, event.keyCode);
+                moveCubePlayer(playerMesh, event.keyCode);
             }
 
         };
@@ -464,10 +517,17 @@
             })
 
         ];
-        mesh = new THREE.Mesh(new THREE.BoxBufferGeometry(200, 200, 200), material);
+
+
+        cubesGroup = new THREE.Group();
+
+        playgroundMesh = new THREE.Mesh(new THREE.BoxBufferGeometry(CUBE_WIDTH, CUBE_WIDTH, CUBE_WIDTH), material);
         var axes = new THREE.AxesHelper(250);
-        mesh.add(axes);
-        scene.add(mesh);
+        playgroundMesh.add(axes);
+        playerMesh = buildCubePlayer(player1);
+        cubesGroup.add(playgroundMesh);
+        cubesGroup.add(playerMesh);
+        scene.add(cubesGroup);
 
 
         renderer = new THREE.WebGLRenderer({antialias: true, canvas: document.getElementById('cvs3D')});
@@ -475,7 +535,7 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        camera.lookAt(mesh.position);
+        camera.lookAt(playgroundMesh.position);
 
         window.addEventListener('resize', onWindowResize, false);
 
@@ -495,13 +555,39 @@
         if (rotationValue !== 0) {
             if (rotationValue > 0) {
                 console.log("HERE");
-                mesh.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(CUBE_ROTATION_SPEED));
+                cubesGroup.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(CUBE_ROTATION_SPEED));
                 return rotationValue - CUBE_ROTATION_SPEED;
             } else if (rotationValue < 0) {
-                mesh.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(-CUBE_ROTATION_SPEED));
+                cubesGroup.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(-CUBE_ROTATION_SPEED));
                 return rotationValue + CUBE_ROTATION_SPEED;
             }
         }
+        return 0;
+    }
+
+    function rotatePlayerCube(rotationValue){
+        if (rotationValue !== 0) {
+            if (rotationAxis == WORLD_AXIS_X) {
+                if (rotationValue > 0) {
+                    console.log(rotationValue);
+                    playerMesh.rotation.x -= THREE.Math.degToRad(1);
+                    return rotationValue - 1;
+
+                }
+
+            }
+        }
+
+      /*  if (rotationValue !== 0) {
+            if (rotationValue > 0) {
+                console.log("HERE");
+                cubesGroup.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(CUBE_ROTATION_SPEED));
+                return rotationValue - CUBE_ROTATION_SPEED;
+            } else if (rotationValue < 0) {
+                cubesGroup.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(-CUBE_ROTATION_SPEED));
+                return rotationValue + CUBE_ROTATION_SPEED;
+            }
+        }*/
         return 0;
     }
 
@@ -509,6 +595,8 @@
         controls.update();
         rotationValueX = rotateCube(rotationValueX);
         rotationValueY = rotateCube(rotationValueY);
+        rotationValuePlayerX = rotatePlayerCube(rotationValuePlayerX);
+        rotationValuePlayerY = rotatePlayerCube(rotationValuePlayerY);
 
         requestAnimationFrame(animate);
         renderer.render(scene, camera);
