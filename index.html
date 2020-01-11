@@ -62,7 +62,7 @@
     <canvas id="cvs3D"></canvas>
 </div>
 <script>
-    var camera, scene, renderer, mesh, material, controls, cubeRotationX, cubeRotationY, quaternion;
+    var camera, scene, renderer, mesh, material, controls, cubeRotationX, cubeRotationY;
     var worldAxisX = new THREE.Vector3(1, 0, 0);
     var worldAxisY = new THREE.Vector3(0, 1, 0);
     var worldAxisZ = new THREE.Vector3(0, 0, 1);
@@ -75,8 +75,7 @@
     const CANVAS_WIDTH = 512;
     const NUMBER_OF_CELLS = 20;
     const LINE_WIDTH = 0.01;
-    // const QUARTER_ROTATION = Math.PI/2;
-    const QUARTER_ROTATION = 90;
+
     var cvsA = document.getElementById('cvsA');
     var cvsB = document.getElementById('cvsB');
     var cvsC = document.getElementById('cvsC');
@@ -122,28 +121,10 @@
                     p.position.x = p.position.y;
                     p.position.y = 0;
                     rotateMovementAntiClockwise(p);
-                    //quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x, mesh.rotation.y, mesh.rotation.z - Math.PI / 2))
                 },
                 "u": (p, keycode) => {
                     p.canvas = cvsD;
                     p.position.y = NUMBER_OF_CELLS - 1;
-
-                    /*switch (keycode) {
-                        case 37:
-                        case 81:
-                            // LEFT
-                            quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x, mesh.rotation.y + Math.PI / 2, mesh.rotation.z))
-                            break;
-                        case 38:
-                        case 90:
-                            // UP
-                            mesh.rotateOnWorldAxis(worldAxisX, THREE.Math.degToRad(1));
-                            //quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x + Math.PI / 2, mesh.rotation.y, mesh.rotation.z))
-
-
-                            break;
-                    }*/
-                    // quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x + Math.PI / 2, mesh.rotation.y, mesh.rotation.z))
 
                 },
                 "r": (p, keycode) => {
@@ -151,13 +132,11 @@
                     p.position.x = NUMBER_OF_CELLS - 1 - p.position.y;
                     p.position.y = 0;
                     rotateMovementClockwise(p);
-                    quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x, mesh.rotation.y, mesh.rotation.z + Math.PI / 2))
                 },
                 "d": (p, keycode) => {
                     p.canvas = cvsB;
                     p.position.y = 0;
                     // TODO VARIABILISER LES 0 pi:2 ETC PARCE QUE CA DEPEND DE LA FACE DE DEPART DU JOUEUR
-                    //quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x - Math.PI / 2, mesh.rotation.y, mesh.rotation.z))
 
                 },
 
@@ -167,40 +146,19 @@
                 "l": (p, keycode) => {
                     p.canvas = cvsE;
                     p.position.x = NUMBER_OF_CELLS - 1;
-                    // quaternion.setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), Math.PI/2 );
-                   // quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x, mesh.rotation.y + Math.PI / 2, mesh.rotation.z));
-
                 },
                 "u": (p, keycode) => {
                     p.canvas = cvsA;
                     p.position.y = NUMBER_OF_CELLS - 1;
-
-                    // quaternion.setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), Math.PI / 2 );
-                    // switch (keycode) {
-                    //     case 37:
-                    //     case 81:
-                    // LEFT
-                    // quaternion.setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), Math.PI);
-                    // break;
-                    // case 38:
-                    // case 90:
-                    // UP
-                    // quaternion.setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), Math.PI / 2 );
-                    // break;
-                    // }
-                  //  quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x + Math.PI / 2, mesh.rotation.y, mesh.rotation.z))
                 },
                 "r": (p, keycode) => {
                     p.canvas = cvsF;
                     p.position.x = 0;
-                    quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x, mesh.rotation.y - Math.PI / 2, mesh.rotation.z))
                 },
                 "d": (p, keycode) => {
                     p.canvas = cvsC;
                     p.position.y = 0;
-                    quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x - Math.PI / 2, mesh.rotation.y, mesh.rotation.z))
                 },
-                quaternion: 0,
             },
         cvsC:
             {
@@ -209,12 +167,10 @@
                     p.position.x = NUMBER_OF_CELLS - 1 - p.position.y;
                     p.position.y = NUMBER_OF_CELLS - 1;
                     rotateMovementClockwise(p);
-                    quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x, mesh.rotation.y, mesh.rotation.z + Math.PI / 2))
                 },
                 "u": (p, keycode) => {
                     p.canvas = cvsB;
                     p.position.y = NUMBER_OF_CELLS - 1;
-                    quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x + Math.PI / 2, mesh.rotation.y, mesh.rotation.z))
                 },
                 "r": (p, keycode) => {
                     p.canvas = cvsF;
@@ -222,14 +178,10 @@
                     p.position.x = x;
                     p.position.y = y;
                     rotateMovementAntiClockwise(p);
-                    quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x, mesh.rotation.y, mesh.rotation.z - Math.PI / 2))
                 },
                 "d": (p, keycode) => {
                     p.canvas = cvsD;
                     p.position.y = 0;
-                    // quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x - Math.PI / 2, mesh.rotation.y, mesh.rotation.z))
-
-
                 },
 
             },
@@ -241,13 +193,11 @@
                     p.position.y = NUMBER_OF_CELLS - 1 - p.position.y;
                     rotateMovementClockwise(p);
                     rotateMovementClockwise(p);
-                    //quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x, mesh.rotation.y + Math.PI / 2, mesh.rotation.z));
 
                 },
                 "u": (p, keycode) => {
                     p.canvas = cvsC;
                     p.position.y = NUMBER_OF_CELLS - 1;
-                    quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x + Math.PI / 2, mesh.rotation.y, mesh.rotation.z))
 
                 },
                 "r": (p, keycode) => {
@@ -256,35 +206,11 @@
                     p.position.y = NUMBER_OF_CELLS - 1 - p.position.y;
                     rotateMovementClockwise(p);
                     rotateMovementClockwise(p);
-                    quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x, mesh.rotation.y - Math.PI / 2, mesh.rotation.z));
                 },
                 "d": (p, keycode) => {
                     p.canvas = cvsA;
                     p.position.y = 0;
-                    switch (keycode) {
-                        case 37:
-                        case 81:
-                            // LEFT
-                            quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x + Math.PI / 2, mesh.rotation.y, mesh.rotation.z))
-                            break;
-                        case 38:
-                        case 90:
-                            // UP
-                            quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x + Math.PI / 2, mesh.rotation.y, mesh.rotation.z))
-                            break;
-                        case 39:
-                        case 68:
-                            // RIGHT
-                            quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x + Math.PI / 2, mesh.rotation.y, mesh.rotation.z))
-                            break;
-                        case 40:
-                        case 83:
-                            // DOWN
-                            quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x + Math.PI / 2, mesh.rotation.y, mesh.rotation.z))
-                            break;
-                    }
                 },
-                quaternion: Math.PI,
             },
         cvsE:
             {
@@ -294,64 +220,22 @@
                     p.position.x = 0;
                     rotateMovementClockwise(p);
                     rotateMovementClockwise(p);
-                    // switch (keycode) {
-                    //     case 37:
-                    //     case 81:
-                    //     LEFT
-                    // quaternion.setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), Math.PI);
-                    // break;
-                    // case 38:
-                    // case 90:
-                    // UP
-                    // quaternion.setFromAxisAngle( new THREE.Vector3( 0.5, 0.5, 0 ), Math.PI);
-                    // break;
-                    // }
-
-                    quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x, mesh.rotation.y + Math.PI / 2, mesh.rotation.z));
-
                 },
                 "u": (p, keycode) => {
                     p.canvas = cvsA;
                     p.position.y = p.position.x;
                     p.position.x = 0;
                     rotateMovementClockwise(p);
-                    quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x, mesh.rotation.y, mesh.rotation.z + Math.PI / 2))
                 },
                 "r": (p, keycode) => {
                     p.canvas = cvsB;
                     p.position.x = 0;
-
-
-                   /* switch (keycode) {
-                        case 37:
-                        case 81:
-                            // LEFT
-                            quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x + Math.PI / 2, mesh.rotation.y, mesh.rotation.z))
-                            break;
-                        case 38:
-                        case 90:
-                            // UP
-                            quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x + Math.PI / 2, mesh.rotation.y, mesh.rotation.z))
-                            break;
-                        case 39:
-                        case 68:
-                            // RIGHT
-                            quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x, mesh.rotation.y - Math.PI / 2, mesh.rotation.z))
-                            break;
-                        case 40:
-                        case 83:
-                            // DOWN
-                            quaternion.setFromEuler(new THREE.Euler( Math.PI / 2, -Math.PI / 2, -Math.PI / 2, "XZY"))
-                            break;
-                    }*/
-
                 },
                 "d": (p, keycode) => {
                     p.canvas = cvsC;
                     p.position.y = NUMBER_OF_CELLS - 1 - p.position.x;
                     p.position.x = 0;
                     rotateMovementAntiClockwise(p);
-                    quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x, mesh.rotation.y, mesh.rotation.z - Math.PI / 2))
 
                 },
             },
@@ -360,14 +244,12 @@
                 "l": (p, keycode) => {
                     p.canvas = cvsB;
                     p.position.x = NUMBER_OF_CELLS - 1;
-                    quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x, mesh.rotation.y + Math.PI / 2, mesh.rotation.z))
                 },
                 "u": (p, keycode) => {
                     p.canvas = cvsA;
                     p.position.y = NUMBER_OF_CELLS - 1 - p.position.x;
                     p.position.x = NUMBER_OF_CELLS - 1;
                     rotateMovementAntiClockwise(p);
-                    quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x, mesh.rotation.y, mesh.rotation.z - Math.PI / 2))
                 },
                 "r": (p, keycode) => {
                     p.canvas = cvsD;
@@ -375,20 +257,15 @@
                     p.position.x = NUMBER_OF_CELLS - 1;
                     rotateMovementAntiClockwise(p);
                     rotateMovementAntiClockwise(p);
-                    quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x, mesh.rotation.y - Math.PI / 2, mesh.rotation.z))
                 },
                 "d": (p, keycode) => {
                     p.canvas = cvsC;
                     p.position.y = p.position.x;
-                    // var {x, y} = swap(p.position.x, p.position.y);
                     p.position.x = NUMBER_OF_CELLS - 1;
                     rotateMovementClockwise(p);
-                    quaternion.setFromEuler(new THREE.Euler(mesh.rotation.x, mesh.rotation.y, mesh.rotation.z + Math.PI / 2))
                 },
             }
     };
-
-    var activeCanvas = cvsB;
 
     var ctx = cvsB.getContext('2d');
     var cellWidth = CANVAS_WIDTH / NUMBER_OF_CELLS;
@@ -406,7 +283,6 @@
 
 
     function fillCellColor(player) {
-        var innerCellWidth = CANVAS_WIDTH / NUMBER_OF_CELLS - LINE_WIDTH;
         var ctx = player.canvas.getContext('2d');
         ctx.fillStyle = player.color;
         ctx.fillRect(player.position.x * cellWidth, player.position.y * cellWidth, cellWidth, cellWidth);
@@ -420,8 +296,6 @@
             mat.map.needsUpdate = true;
         });
 
-
-        //mesh.needsUpdate = true;
     }
 
     document.onkeydown = function (event) {
@@ -490,12 +364,6 @@
     }
 
     function movePlayer(player, keycode) {
-        // ici c'est quand on atteint le bord de la grille
-        /*var newActiveCanvas = movement_matrix[activeCanvas.id][event.keyCode];
-        fillCellColor(newActiveCanvas, 'orange')
-        activeCanvas = newActiveCanvas;*/
-
-        // ON LE BOUGE SUR LE CANVAS SAUF SI ON DEPASSE SES LIMITES ON CHANGE DE CANVAS
         var movement = "";
         // TODO VERIFIER COLISIONS PLAYER
         switch (keycode) {
@@ -505,10 +373,7 @@
                 movement = player.movement.left;
                 updatePlayerCoordinates(player, movement);
                 if (leaveCanvas(player)) {
-                    // calculer sa position avant
-                    //player.canvas = movement_matrix[player.canvas.id][movement];
                     movement_matrix[player.canvas.id][movement](player, keycode);
-                    // peindre la cell ?
                     rotationAxis = worldAxisY;
                     rotationValueY += 90;
                 }
@@ -521,12 +386,9 @@
                 movement = player.movement.up;
                 updatePlayerCoordinates(player, movement);
                 if (leaveCanvas(player)) {
-                    // calculer sa position avant
-                    //player.canvas = movement_matrix[player.canvas.id][movement];
                     movement_matrix[player.canvas.id][movement](player, keycode);
                     rotationAxis = worldAxisX;
                     rotationValueX += 90;
-                    // peindre la cell ?
                 }
 
                 fillCellColor(player);
@@ -537,10 +399,7 @@
                 movement = player.movement.right;
                 updatePlayerCoordinates(player, movement);
                 if (leaveCanvas(player)) {
-                    // calculer sa position avant
-                    //player.canvas = movement_matrix[player.canvas.id][movement];
                     movement_matrix[player.canvas.id][movement](player, keycode);
-                    // peindre la cell ?
                     rotationAxis = worldAxisY;
                     rotationValueY -= 90;
                 }
@@ -553,12 +412,9 @@
                 movement = player.movement.down;
                 updatePlayerCoordinates(player, movement);
                 if (leaveCanvas(player)) {
-                    // calculer sa position avant
-                    //player.canvas = movement_matrix[player.canvas.id][movement];
                     movement_matrix[player.canvas.id][movement](player, keycode);
-                    // peindre la cell ?
                     rotationAxis = worldAxisX;
-                    rotationValueX -=90;
+                    rotationValueX -= 90;
                 }
 
                 fillCellColor(player);
@@ -637,7 +493,6 @@
         mesh.add(axes);
         scene.add(mesh);
 
-        quaternion = new THREE.Quaternion();
 
         renderer = new THREE.WebGLRenderer({antialias: true, canvas: document.getElementById('cvs3D')});
         renderer.setPixelRatio(window.devicePixelRatio);
@@ -667,84 +522,23 @@
     function animate() {
         controls.update();
 
-       /* if (!mesh.quaternion.equals(quaternion)) {
-            mesh.quaternion.rotateTowards(quaternion, 0.05);
-        }*/
-
-        /* material.forEach(mat => {
-            console.log(mat.needsUpdate);
-         });*/
-        /* if (cubeRotationX >= 360) cubeRotationX = 0;
-         if (cubeRotationY >= 360) cubeRotationY = 0;
-         console.log(mesh.rotation.x, cubeRotationX);
-
-
-         if (cubeRotationX <= 180) {
-             if (THREE.Math.radToDeg(mesh.rotation.x) < cubeRotationX + 0.6 && THREE.Math.radToDeg(mesh.rotation.x) > cubeRotationX - 0.6) {
-                 mesh.rotation.x = THREE.Math.degToRad(cubeRotationX);
-             } else {
-                 mesh.rotateX(0.01);
-             }
-         } else {
-             if (360 - Math.abs(THREE.Math.radToDeg(mesh.rotation.x)) > 268 && 360 - Math.abs(THREE.Math.radToDeg(mesh.rotation.x)) < 272) {
-                 mesh.rotation.x =  THREE.Math.degToRad(270);
-             }
-             if (360 - Math.abs(THREE.Math.radToDeg(mesh.rotation.x)) < cubeRotationX + 0.6 && 360 - Math.abs(THREE.Math.radToDeg(mesh.rotation.x)) > cubeRotationX - 0.6) {
-                 mesh.rotation.x = THREE.Math.degToRad(cubeRotationX);
-             } else {
-                 mesh.rotateX(0.01);
-             }
-         }
-
-         if (cubeRotationY <= 180) {
-             if (THREE.Math.radToDeg(mesh.rotation.y) < cubeRotationY + 0.6 && THREE.Math.radToDeg(mesh.rotation.y) > cubeRotationY - 0.6) {
-                 mesh.rotation.y = THREE.Math.degToRad(cubeRotationY);
-             } else {
-                 mesh.rotateY(0.01);
-             }
-         } else {
-             if (360 - Math.abs(THREE.Math.radToDeg(mesh.rotation.y)) > 268 && 360 - Math.abs(THREE.Math.radToDeg(mesh.rotation.y)) < 272) {
-                 mesh.rotation.y =  THREE.Math.degToRad(270);
-             }
-             if (360 - Math.abs(THREE.Math.radToDeg(mesh.rotation.y)) < cubeRotationY + 0.6 && 360 - Math.abs(THREE.Math.radToDeg(mesh.rotation.y)) > cubeRotationY - 0.6) {
-                 mesh.rotation.y = THREE.Math.degToRad(cubeRotationY);
-             } else {
-                 mesh.rotateY(0.01);
-             }
-         }
- */
-        /*if(mesh.rotation.x > 0 && mesh.rotation.x < Math.PI){
-            if (mes.rotation.x < cubeRotationX)
-            if(Math.abs(mesh.rotation.x) < cubeRotationX + 0.02 && Math.abs(mesh.rotation.x) > cubeRotationX - 0.02){
-                mesh.rotation.x = cubeRotationX;
-            }else{
-                mesh.rotateX(0.01);
-            }
-        }else if(mesh.rotation.x > cubeRotationX){
-            mesh.rotateX(-0.01);
-        }
-        if(mesh.rotation.y < cubeRotationY ){
-            mesh.rotateY(0.01);
-        }else if(mesh.rotation.y > cubeRotationY){
-            mesh.rotateY(-0.01);
-        }*/
-        if(rotationValueX !== 0){
-            if(rotationValueX > 0) {
+        if (rotationValueX !== 0) {
+            if (rotationValueX > 0) {
                 mesh.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(3));
-                rotationValueX-=3;
-            }else if(rotationValueX <0){
+                rotationValueX -= 3;
+            } else if (rotationValueX < 0) {
                 mesh.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(-3));
-                rotationValueX+=3;
+                rotationValueX += 3;
             }
         }
 
-        if(rotationValueY !== 0){
-            if(rotationValueY > 0) {
+        if (rotationValueY !== 0) {
+            if (rotationValueY > 0) {
                 mesh.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(3));
-                rotationValueY-=3;
-            }else if(rotationValueY <0){
+                rotationValueY -= 3;
+            } else if (rotationValueY < 0) {
                 mesh.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(-3));
-                rotationValueY+=3;
+                rotationValueY += 3;
             }
         }
 
