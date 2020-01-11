@@ -62,33 +62,191 @@
     <canvas id="cvs3D"></canvas>
 </div>
 <script>
-    var camera, scene, renderer, mesh, material, controls, cubeRotationX, cubeRotationY;
-    var worldAxisX = new THREE.Vector3(1, 0, 0);
-    var worldAxisY = new THREE.Vector3(0, 1, 0);
-    var worldAxisZ = new THREE.Vector3(0, 0, 1);
+    var camera, scene, renderer, mesh, material, controls, rotationAxis;
 
-    var rotationAxis;
+    const WORLD_AXIS_X = new THREE.Vector3(1, 0, 0);
+    const WORL_AXIS_Y = new THREE.Vector3(0, 1, 0);
+    const CANVAS_WIDTH = 512;
+    const NUMBER_OF_CELLS = 10;
+    const CUBE_ROTATION_SPEED = 5;
+    const CELL_WIDTH = CANVAS_WIDTH / NUMBER_OF_CELLS;
+    const CVS_A = document.getElementById('cvsA');
+    const CVS_B = document.getElementById('cvsB');
+    const CVS_C = document.getElementById('cvsC');
+    const CVS_D = document.getElementById('cvsD');
+    const CVS_E = document.getElementById('cvsE');
+    const CVS_F = document.getElementById('cvsF');
+
     var rotationValueX = 0;
     var rotationValueY = 0;
-    cubeRotationX = 0;
-    cubeRotationY = 0;
-    const CANVAS_WIDTH = 512;
-    const NUMBER_OF_CELLS = 20;
-    const LINE_WIDTH = 0.01;
+    var player1 = buildPlayer('orange', CVS_B);
+    var player2 = buildPlayer('red', CVS_A);
+    var player3 = buildPlayer('blue', CVS_D);
+    var player4 = buildPlayer('green', CVS_C);
+    var player5 = buildPlayer('black', CVS_E);
+    var movement_matrix = {
+        cvsA:
+            {
+                "l": (p) => {
+                    p.canvas = CVS_E;
+                    p.position.x = p.position.y;
+                    p.position.y = 0;
+                    rotateMovementAntiClockwise(p);
+                },
+                "u": (p) => {
+                    p.canvas = CVS_D;
+                    p.position.y = NUMBER_OF_CELLS - 1;
 
-    var cvsA = document.getElementById('cvsA');
-    var cvsB = document.getElementById('cvsB');
-    var cvsC = document.getElementById('cvsC');
-    var cvsD = document.getElementById('cvsD');
-    var cvsE = document.getElementById('cvsE');
-    var cvsF = document.getElementById('cvsF');
+                },
+                "r": (p) => {
+                    p.canvas = CVS_F;
+                    p.position.x = NUMBER_OF_CELLS - 1 - p.position.y;
+                    p.position.y = 0;
+                    rotateMovementClockwise(p);
+                },
+                "d": (p) => {
+                    p.canvas = CVS_B;
+                    p.position.y = 0;
+                    // TODO VARIABILISER LES 0 pi:2 ETC PARCE QUE CA DEPEND DE LA FACE DE DEPART DU JOUEUR
+
+                },
+
+            },
+        cvsB:
+            {
+                "l": (p) => {
+                    p.canvas = CVS_E;
+                    p.position.x = NUMBER_OF_CELLS - 1;
+                },
+                "u": (p) => {
+                    p.canvas = CVS_A;
+                    p.position.y = NUMBER_OF_CELLS - 1;
+                },
+                "r": (p) => {
+                    p.canvas = CVS_F;
+                    p.position.x = 0;
+                },
+                "d": (p) => {
+                    p.canvas = CVS_C;
+                    p.position.y = 0;
+                },
+            },
+        cvsC:
+            {
+                "l": (p) => {
+                    p.canvas = CVS_E;
+                    p.position.x = NUMBER_OF_CELLS - 1 - p.position.y;
+                    p.position.y = NUMBER_OF_CELLS - 1;
+                    rotateMovementClockwise(p);
+                },
+                "u": (p) => {
+                    p.canvas = CVS_B;
+                    p.position.y = NUMBER_OF_CELLS - 1;
+                },
+                "r": (p) => {
+                    p.canvas = CVS_F;
+                    p.position.x = p.position.y;
+                    p.position.y = NUMBER_OF_CELLS - 1;
+                    rotateMovementAntiClockwise(p);
+                },
+                "d": (p) => {
+                    p.canvas = CVS_D;
+                    p.position.y = 0;
+                },
+
+            },
+        cvsD:
+            {
+                "l": (p) => {
+                    p.canvas = CVS_E;
+                    p.position.x = 0;
+                    p.position.y = NUMBER_OF_CELLS - 1 - p.position.y;
+                    rotateMovementClockwise(p);
+                    rotateMovementClockwise(p);
+                },
+                "u": (p) => {
+                    p.canvas = CVS_C;
+                    p.position.y = NUMBER_OF_CELLS - 1;
+
+                },
+                "r": (p) => {
+                    p.canvas = CVS_F;
+                    p.position.x = NUMBER_OF_CELLS - 1;
+                    p.position.y = NUMBER_OF_CELLS - 1 - p.position.y;
+                    rotateMovementClockwise(p);
+                    rotateMovementClockwise(p);
+                },
+                "d": (p) => {
+                    p.canvas = CVS_A;
+                    p.position.y = 0;
+                },
+            },
+        cvsE:
+            {
+                "l": (p) => {
+                    p.canvas = CVS_D;
+                    p.position.y = NUMBER_OF_CELLS - 1 - p.position.y;
+                    p.position.x = 0;
+                    rotateMovementClockwise(p);
+                    rotateMovementClockwise(p);
+                },
+                "u": (p) => {
+                    p.canvas = CVS_A;
+                    p.position.y = p.position.x;
+                    p.position.x = 0;
+                    rotateMovementClockwise(p);
+                },
+                "r": (p) => {
+                    p.canvas = CVS_B;
+                    p.position.x = 0;
+                },
+                "d": (p) => {
+                    p.canvas = CVS_C;
+                    p.position.y = NUMBER_OF_CELLS - 1 - p.position.x;
+                    p.position.x = 0;
+                    rotateMovementAntiClockwise(p);
+
+                },
+            },
+        cvsF:
+            {
+                "l": (p) => {
+                    p.canvas = CVS_B;
+                    p.position.x = NUMBER_OF_CELLS - 1;
+                },
+                "u": (p) => {
+                    p.canvas = CVS_A;
+                    p.position.y = NUMBER_OF_CELLS - 1 - p.position.x;
+                    p.position.x = NUMBER_OF_CELLS - 1;
+                    rotateMovementAntiClockwise(p);
+                },
+                "r": (p) => {
+                    p.canvas = CVS_D;
+                    p.position.y = NUMBER_OF_CELLS - 1 - p.position.y;
+                    p.position.x = NUMBER_OF_CELLS - 1;
+                    rotateMovementAntiClockwise(p);
+                    rotateMovementAntiClockwise(p);
+                },
+                "d": (p) => {
+                    p.canvas = CVS_C;
+                    p.position.y = p.position.x;
+                    p.position.x = NUMBER_OF_CELLS - 1;
+                    rotateMovementClockwise(p);
+                },
+            }
+    };
 
 
-    function swap(x, y) {
-        var a = x;
-        x = y;
-        y = a;
-        return {x: x, y: y};
+    function startGame() {
+        init();
+
+        fillCellColor(player1);
+        fillCellColor(player2);
+        fillCellColor(player3);
+        fillCellColor(player4);
+        fillCellColor(player5);
+
+        animate();
     }
 
     function rotateMovementClockwise(p) {
@@ -113,183 +271,14 @@
         p.movement.left = d;
     }
 
-    var movement_matrix = {
-        cvsA:
-            {
-                "l": (p, keycode) => {
-                    p.canvas = cvsE;
-                    p.position.x = p.position.y;
-                    p.position.y = 0;
-                    rotateMovementAntiClockwise(p);
-                },
-                "u": (p, keycode) => {
-                    p.canvas = cvsD;
-                    p.position.y = NUMBER_OF_CELLS - 1;
-
-                },
-                "r": (p, keycode) => {
-                    p.canvas = cvsF;
-                    p.position.x = NUMBER_OF_CELLS - 1 - p.position.y;
-                    p.position.y = 0;
-                    rotateMovementClockwise(p);
-                },
-                "d": (p, keycode) => {
-                    p.canvas = cvsB;
-                    p.position.y = 0;
-                    // TODO VARIABILISER LES 0 pi:2 ETC PARCE QUE CA DEPEND DE LA FACE DE DEPART DU JOUEUR
-
-                },
-
-            },
-        cvsB:
-            {
-                "l": (p, keycode) => {
-                    p.canvas = cvsE;
-                    p.position.x = NUMBER_OF_CELLS - 1;
-                },
-                "u": (p, keycode) => {
-                    p.canvas = cvsA;
-                    p.position.y = NUMBER_OF_CELLS - 1;
-                },
-                "r": (p, keycode) => {
-                    p.canvas = cvsF;
-                    p.position.x = 0;
-                },
-                "d": (p, keycode) => {
-                    p.canvas = cvsC;
-                    p.position.y = 0;
-                },
-            },
-        cvsC:
-            {
-                "l": (p, keycode) => {
-                    p.canvas = cvsE;
-                    p.position.x = NUMBER_OF_CELLS - 1 - p.position.y;
-                    p.position.y = NUMBER_OF_CELLS - 1;
-                    rotateMovementClockwise(p);
-                },
-                "u": (p, keycode) => {
-                    p.canvas = cvsB;
-                    p.position.y = NUMBER_OF_CELLS - 1;
-                },
-                "r": (p, keycode) => {
-                    p.canvas = cvsF;
-                    var {x, y} = swap(p.position.x, p.position.y);
-                    p.position.x = x;
-                    p.position.y = y;
-                    rotateMovementAntiClockwise(p);
-                },
-                "d": (p, keycode) => {
-                    p.canvas = cvsD;
-                    p.position.y = 0;
-                },
-
-            },
-        cvsD:
-            {
-                "l": (p, keycode) => {
-                    p.canvas = cvsE;
-                    p.position.x = 0;
-                    p.position.y = NUMBER_OF_CELLS - 1 - p.position.y;
-                    rotateMovementClockwise(p);
-                    rotateMovementClockwise(p);
-
-                },
-                "u": (p, keycode) => {
-                    p.canvas = cvsC;
-                    p.position.y = NUMBER_OF_CELLS - 1;
-
-                },
-                "r": (p, keycode) => {
-                    p.canvas = cvsF;
-                    p.position.x = NUMBER_OF_CELLS - 1;
-                    p.position.y = NUMBER_OF_CELLS - 1 - p.position.y;
-                    rotateMovementClockwise(p);
-                    rotateMovementClockwise(p);
-                },
-                "d": (p, keycode) => {
-                    p.canvas = cvsA;
-                    p.position.y = 0;
-                },
-            },
-        cvsE:
-            {
-                "l": (p, keycode) => {
-                    p.canvas = cvsD;
-                    p.position.y = NUMBER_OF_CELLS - 1 - p.position.y;
-                    p.position.x = 0;
-                    rotateMovementClockwise(p);
-                    rotateMovementClockwise(p);
-                },
-                "u": (p, keycode) => {
-                    p.canvas = cvsA;
-                    p.position.y = p.position.x;
-                    p.position.x = 0;
-                    rotateMovementClockwise(p);
-                },
-                "r": (p, keycode) => {
-                    p.canvas = cvsB;
-                    p.position.x = 0;
-                },
-                "d": (p, keycode) => {
-                    p.canvas = cvsC;
-                    p.position.y = NUMBER_OF_CELLS - 1 - p.position.x;
-                    p.position.x = 0;
-                    rotateMovementAntiClockwise(p);
-
-                },
-            },
-        cvsF:
-            {
-                "l": (p, keycode) => {
-                    p.canvas = cvsB;
-                    p.position.x = NUMBER_OF_CELLS - 1;
-                },
-                "u": (p, keycode) => {
-                    p.canvas = cvsA;
-                    p.position.y = NUMBER_OF_CELLS - 1 - p.position.x;
-                    p.position.x = NUMBER_OF_CELLS - 1;
-                    rotateMovementAntiClockwise(p);
-                },
-                "r": (p, keycode) => {
-                    p.canvas = cvsD;
-                    p.position.y = NUMBER_OF_CELLS - 1 - p.position.y;
-                    p.position.x = NUMBER_OF_CELLS - 1;
-                    rotateMovementAntiClockwise(p);
-                    rotateMovementAntiClockwise(p);
-                },
-                "d": (p, keycode) => {
-                    p.canvas = cvsC;
-                    p.position.y = p.position.x;
-                    p.position.x = NUMBER_OF_CELLS - 1;
-                    rotateMovementClockwise(p);
-                },
-            }
-    };
-
-    var ctx = cvsB.getContext('2d');
-    var cellWidth = CANVAS_WIDTH / NUMBER_OF_CELLS;
-
-    for (x = 0; x <= ctx.canvas.width; x += cellWidth) {
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, ctx.canvas.height);
-        for (y = 0; y <= ctx.canvas.height; y += cellWidth) {
-            ctx.moveTo(0, y);
-            ctx.lineTo(ctx.canvas.width, y);
-        }
-    }
-    ctx.lineWidth = LINE_WIDTH;
-    ctx.stroke();
-
-
     function fillCellColor(player) {
         var ctx = player.canvas.getContext('2d');
         ctx.fillStyle = player.color;
-        ctx.fillRect(player.position.x * cellWidth, player.position.y * cellWidth, cellWidth, cellWidth);
+        ctx.fillRect(player.position.x * CELL_WIDTH, player.position.y * CELL_WIDTH, CELL_WIDTH, CELL_WIDTH);
 
         ctx.strokeStyle = "black";
         ctx.lineWidth = 1;
-        ctx.strokeRect(player.position.x * cellWidth, player.position.y * cellWidth, cellWidth, cellWidth);
+        ctx.strokeRect(player.position.x * CELL_WIDTH, player.position.y * CELL_WIDTH, CELL_WIDTH, CELL_WIDTH);
 
 
         material.forEach(mat => {
@@ -297,19 +286,6 @@
         });
 
     }
-
-    document.onkeydown = function (event) {
-        // PLAYER 2 joue avec les flèches
-        if ([37, 38, 39, 40].includes(event.keyCode)) {
-            movePlayer(player2, event.keyCode);
-        }
-        // PLAYER 1 joue avec zqsd
-        if ([90, 81, 83, 68].includes(event.keyCode)) {
-            movePlayer(player1, event.keyCode);
-        }
-
-    };
-
 
     function buildPlayer(color, canvas) {
         return {
@@ -373,8 +349,8 @@
                 movement = player.movement.left;
                 updatePlayerCoordinates(player, movement);
                 if (leaveCanvas(player)) {
-                    movement_matrix[player.canvas.id][movement](player, keycode);
-                    rotationAxis = worldAxisY;
+                    movement_matrix[player.canvas.id][movement](player);
+                    rotationAxis = WORL_AXIS_Y;
                     rotationValueY += 90;
                 }
 
@@ -386,8 +362,8 @@
                 movement = player.movement.up;
                 updatePlayerCoordinates(player, movement);
                 if (leaveCanvas(player)) {
-                    movement_matrix[player.canvas.id][movement](player, keycode);
-                    rotationAxis = worldAxisX;
+                    movement_matrix[player.canvas.id][movement](player);
+                    rotationAxis = WORLD_AXIS_X;
                     rotationValueX += 90;
                 }
 
@@ -399,8 +375,8 @@
                 movement = player.movement.right;
                 updatePlayerCoordinates(player, movement);
                 if (leaveCanvas(player)) {
-                    movement_matrix[player.canvas.id][movement](player, keycode);
-                    rotationAxis = worldAxisY;
+                    movement_matrix[player.canvas.id][movement](player);
+                    rotationAxis = WORL_AXIS_Y;
                     rotationValueY -= 90;
                 }
 
@@ -412,8 +388,8 @@
                 movement = player.movement.down;
                 updatePlayerCoordinates(player, movement);
                 if (leaveCanvas(player)) {
-                    movement_matrix[player.canvas.id][movement](player, keycode);
-                    rotationAxis = worldAxisX;
+                    movement_matrix[player.canvas.id][movement](player);
+                    rotationAxis = WORLD_AXIS_X;
                     rotationValueX -= 90;
                 }
 
@@ -433,29 +409,29 @@
         return false;
     }
 
-
-    var player1 = buildPlayer('orange', cvsB);
-    var player2 = buildPlayer('red', cvsA);
-    var player3 = buildPlayer('blue', cvsD);
-    var player4 = buildPlayer('green', cvsC);
-    var player5 = buildPlayer('black', cvsE);
-    drawGridOnCanvas(cvsA);
-    drawGridOnCanvas(cvsB);
-    drawGridOnCanvas(cvsC);
-    drawGridOnCanvas(cvsD);
-    drawGridOnCanvas(cvsE);
-    drawGridOnCanvas(cvsF);
-    init();
-
-    fillCellColor(player1);
-    fillCellColor(player2);
-    fillCellColor(player3);
-    fillCellColor(player4);
-    fillCellColor(player5);
-
-    animate();
+    function drawGrid() {
+        drawGridOnCanvas(CVS_A);
+        drawGridOnCanvas(CVS_B);
+        drawGridOnCanvas(CVS_C);
+        drawGridOnCanvas(CVS_D);
+        drawGridOnCanvas(CVS_E);
+        drawGridOnCanvas(CVS_F);
+    }
 
     function init() {
+        document.onkeydown = function (event) {
+            // PLAYER 2 joue avec les flèches
+            if ([37, 38, 39, 40].includes(event.keyCode)) {
+                movePlayer(player2, event.keyCode);
+            }
+            // PLAYER 1 joue avec zqsd
+            if ([90, 81, 83, 68].includes(event.keyCode)) {
+                movePlayer(player1, event.keyCode);
+            }
+
+        };
+
+        drawGrid();
 
         camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 2000);
         camera.position.x = -200;
@@ -463,25 +439,25 @@
         camera.position.z = 500;
 
         scene = new THREE.Scene();
-        var backFace = new THREE.CanvasTexture(cvsD);
+        var backFace = new THREE.CanvasTexture(CVS_D);
         backFace.center = new THREE.Vector2(0.5, 0.5);
         backFace.rotation = Math.PI;
 
         material = [
             new THREE.MeshBasicMaterial({
-                map: new THREE.CanvasTexture(cvsF)
+                map: new THREE.CanvasTexture(CVS_F)
             }),
             new THREE.MeshBasicMaterial({
-                map: new THREE.CanvasTexture(cvsE)
+                map: new THREE.CanvasTexture(CVS_E)
             }),
             new THREE.MeshBasicMaterial({
-                map: new THREE.CanvasTexture(cvsA)
+                map: new THREE.CanvasTexture(CVS_A)
             }),
             new THREE.MeshBasicMaterial({
-                map: new THREE.CanvasTexture(cvsC)
+                map: new THREE.CanvasTexture(CVS_C)
             }),
             new THREE.MeshBasicMaterial({
-                map: new THREE.CanvasTexture(cvsB)
+                map: new THREE.CanvasTexture(CVS_B)
             }),
             new THREE.MeshBasicMaterial({
                 map: backFace
@@ -510,43 +486,35 @@
     }
 
     function onWindowResize() {
-
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
-
         renderer.setSize(window.innerWidth, window.innerHeight);
-
     }
 
+    function rotateCube(rotationValue) {
+        if (rotationValue !== 0) {
+            if (rotationValue > 0) {
+                console.log("HERE");
+                mesh.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(CUBE_ROTATION_SPEED));
+                return rotationValue - CUBE_ROTATION_SPEED;
+            } else if (rotationValue < 0) {
+                mesh.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(-CUBE_ROTATION_SPEED));
+                return rotationValue + CUBE_ROTATION_SPEED;
+            }
+        }
+        return 0;
+    }
 
     function animate() {
         controls.update();
-
-        if (rotationValueX !== 0) {
-            if (rotationValueX > 0) {
-                mesh.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(3));
-                rotationValueX -= 3;
-            } else if (rotationValueX < 0) {
-                mesh.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(-3));
-                rotationValueX += 3;
-            }
-        }
-
-        if (rotationValueY !== 0) {
-            if (rotationValueY > 0) {
-                mesh.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(3));
-                rotationValueY -= 3;
-            } else if (rotationValueY < 0) {
-                mesh.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(-3));
-                rotationValueY += 3;
-            }
-        }
+        rotationValueX = rotateCube(rotationValueX);
+        rotationValueY = rotateCube(rotationValueY);
 
         requestAnimationFrame(animate);
         renderer.render(scene, camera);
     }
 
-
+    startGame();
 </script>
 </body>
 </html>
