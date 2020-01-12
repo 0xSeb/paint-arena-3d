@@ -321,7 +321,7 @@
         mesh.position.x -= 10;
         mesh.position.y -= 10;
         mesh.position.z -= 10;
-        var axes = new THREE.AxesHelper(500);
+        var axes = new THREE.AxesHelper(1000);
         mesh.add(axes);
         return mesh;
     }
@@ -403,6 +403,7 @@
                     movement_matrix[player.canvas.id][movement](player);
                     rotationAxis = WORL_AXIS_Y;
                     rotationValueY += 90;
+                    rotationValuePlayerY += 90;
                 }
 
                 fillCellColor(player);
@@ -417,6 +418,8 @@
                     rotationAxis = WORLD_AXIS_X;
                     rotationValueX += 90;
                     rotationValuePlayerX += 90;
+
+
                 }
 
                 fillCellColor(player);
@@ -430,6 +433,7 @@
                     movement_matrix[player.canvas.id][movement](player);
                     rotationAxis = WORL_AXIS_Y;
                     rotationValueY -= 90;
+                    rotationValuePlayerY -= 90;
                 }
 
                 fillCellColor(player);
@@ -443,6 +447,8 @@
                     movement_matrix[player.canvas.id][movement](player);
                     rotationAxis = WORLD_AXIS_X;
                     rotationValueX -= 90;
+                    rotationValuePlayerX -= 90;
+
                 }
 
                 fillCellColor(player);
@@ -480,6 +486,7 @@
             if ([90, 81, 83, 68].includes(event.keyCode)) {
                 movePlayer(player1, event.keyCode);
                 moveCubePlayer(playerMesh, event.keyCode);
+
             }
 
         };
@@ -520,14 +527,14 @@
 
 
         cubesGroup = new THREE.Group();
-
         playgroundMesh = new THREE.Mesh(new THREE.BoxBufferGeometry(CUBE_WIDTH, CUBE_WIDTH, CUBE_WIDTH), material);
         var axes = new THREE.AxesHelper(250);
         playgroundMesh.add(axes);
         playerMesh = buildCubePlayer(player1);
         cubesGroup.add(playgroundMesh);
-        cubesGroup.add(playerMesh);
+      //  cubesGroup.add(playerMesh);
         scene.add(cubesGroup);
+        scene.add(playerMesh);
 
 
         renderer = new THREE.WebGLRenderer({antialias: true, canvas: document.getElementById('cvs3D')});
@@ -554,11 +561,14 @@
     function rotateCube(rotationValue) {
         if (rotationValue !== 0) {
             if (rotationValue > 0) {
-                console.log("HERE");
+                cubesGroup.attach(playerMesh);
                 cubesGroup.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(CUBE_ROTATION_SPEED));
-                return rotationValue - CUBE_ROTATION_SPEED;
+                scene.attach(playerMesh);
+                    return rotationValue - CUBE_ROTATION_SPEED;
             } else if (rotationValue < 0) {
+                cubesGroup.attach(playerMesh);
                 cubesGroup.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(-CUBE_ROTATION_SPEED));
+                scene.attach(playerMesh);
                 return rotationValue + CUBE_ROTATION_SPEED;
             }
         }
@@ -569,12 +579,20 @@
         if (rotationValue !== 0) {
             if (rotationAxis == WORLD_AXIS_X) {
                 if (rotationValue > 0) {
-                    console.log(rotationValue);
-                    playerMesh.rotation.x -= THREE.Math.degToRad(1);
+                    playerMesh.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(-1));
                     return rotationValue - 1;
-
+                }else if (rotationValue < 0){
+                    playerMesh.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(+1));
+                    return rotationValue + 1;
                 }
-
+            }else if (rotationAxis == WORL_AXIS_Y) {
+                if (rotationValue > 0) {
+                    playerMesh.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(-1));
+                    return rotationValue - 1;
+                }else if (rotationValue < 0){
+                    playerMesh.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(+1));
+                    return rotationValue + 1;
+                }
             }
         }
 
