@@ -7,10 +7,12 @@ const MOVEMENT = { LEFT: "l", RIGHT: "r", UP: "u", DOWN: "d" }
 const WORLD_AXIS_X = new THREE.Vector3(1, 0, 0);
 const WORLD_AXIS_Y = new THREE.Vector3(0, 1, 0);
 const PLAYGROUND_ROTATION_SPEED = 10;
+const PLAYER_ROTATION_SPEED = 3;
 
+let player_cube_origin = "BL";
 let renderer, scene, camera, controls;
 let playgroundRotation = {x: 0, y: 0};
-let playerRotataion = {x: 0, y: 0};
+let playerRotation = {x: 0, y: 0};
 
 function initRenderer() {
     renderer = new THREE.WebGLRenderer({antialias: true, canvas: document.getElementById('cvs3D')});
@@ -144,8 +146,8 @@ function applyMovement(player, grid, movementMatrix, movement, axis, pgr, pyr) {
         movementMatrix[player.canvas.id][movement](player);
         playgroundRotation.x += pgr[0];
         playgroundRotation.y += pgr[1];
-        playerRotataion.x += pyr[0];
-        playerRotataion.y += pyr[1];
+        playerRotation.x += pyr[0];
+        playerRotation.y += pyr[1];
     }
     fillCell(player, grid);
 }
@@ -181,13 +183,11 @@ function movePlayer(player, keycode, grid, movementMatrix) {
 function handleUserInputs(player1, player2, grid, movementMatrix) {
     document.onkeydown = function (event) {
         // PLAYER 1 joue avec zqsd
-        if ([90, 81, 83, 68].includes(event.keyCode)) {
+        if ([90, 81, 83, 68].includes(event.keyCode))
             movePlayer(player1, event.keyCode, grid, movementMatrix);
-        }
         // PLAYER 2 joue avec les flèches
-        if ([37, 38, 39, 40].includes(event.keyCode)) {
+        if ([37, 38, 39, 40].includes(event.keyCode))
             movePlayer(player2, event.keyCode, grid, movementMatrix);
-        }
     };
     window.addEventListener('resize', onWindowResize, false);
 }
@@ -220,33 +220,80 @@ function rotatePlayer(rotation) {
     let rotationAxis = getRotationAxis(rotation)
     let cubesGroup = scene.getObjectByName("cubesGroup");
     let playerMesh = scene.getObjectByName("player1");
-    for (let axis in result)
+    for (let axis in result) {
         if (rotation[axis] !== 0) {
             if (rotationAxis == WORLD_AXIS_X) {
                 if (rotation[axis] > 0) {
-                    playerMesh.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(-1));
-                    result[axis] = rotation[axis] - 1;
+                    playerMesh.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(-PLAYER_ROTATION_SPEED));
+                    result[axis] = rotation[axis] - PLAYER_ROTATION_SPEED;
                 } else if (rotation[axis] < 0) {
-                    playerMesh.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(+1));
-                    result[axis] = rotation[axis] + 1;
+                    playerMesh.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(+PLAYER_ROTATION_SPEED));
+                    result[axis] = rotation[axis] + PLAYER_ROTATION_SPEED;
                 }
             } else if (rotationAxis == WORLD_AXIS_Y) {
                 if (rotation[axis] > 0) {
-                    playerMesh.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(-1));
-                    result[axis] = rotation[axis] - 1;
+                    playerMesh.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(-PLAYER_ROTATION_SPEED));
+                    result[axis] = rotation[axis] - PLAYER_ROTATION_SPEED;
                 } else if (rotation[axis] < 0) {
-                    playerMesh.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(+1));
-                    result[axis] = rotation[axis] + 1;
+                    playerMesh.rotateOnWorldAxis(rotationAxis, THREE.Math.degToRad(+PLAYER_ROTATION_SPEED));
+                    result[axis] = rotation[axis] + PLAYER_ROTATION_SPEED;
                 }
             }
-        }
+        } else {
+            resetPlayerOrigin(playerMesh);
+        } 
+    }
     return result;
 }
 
+function movePlayerEdge(rotation) {
+    let result = {x: 0, y: 0};
+    let rotationAxis = getRotationAxis(rotation)
+    let cubesGroup = scene.getObjectByName("cubesGroup");
+    let playerMesh = scene.getObjectByName("player1");
+    for (let axis in result) {
+        if (rotation[axis] !== 0) {
+            if (rotationAxis == WORLD_AXIS_X && rotation[axis] < 0) {
+                if (rotation[axis] == -90) {
+                    playerMesh.geometry.translate(0,-PLAYER_CUBE_WIDTH,0);
+                    playerMesh.position.y = Math.round(playerMesh.position.y + PLAYER_CUBE_WIDTH);
+                    player_cube_origin = "TL";
+                }
+            } else if (rotationAxis == WORLD_AXIS_Y && rotation[axis] > 0) {
+                if (rotation[axis] == 90) {
+                    playerMesh.geometry.translate(-PLAYER_CUBE_WIDTH,0,0);
+                    playerMesh.position.x = Math.round(playerMesh.position.x + PLAYER_CUBE_WIDTH);
+                    player_cube_origin = "BR";
+                }
+            }
+        }
+    }
+    return result;
+}
+
+function resetPlayerOrigin(playerMesh) {
+    if (playerRotation.x == 0 && playerRotation.y == 0) {
+        switch (player_cube_origin) {
+            case "TL":
+                playerMesh.geometry.translate(0, +PLAYER_CUBE_WIDTH, 0);
+                playerMesh.position.y -= PLAYER_CUBE_WIDTH;
+                break;
+            case "BR":
+                playerMesh.geometry.translate(+PLAYER_CUBE_WIDTH, 0,0);
+                playerMesh.position.x -= PLAYER_CUBE_WIDTH;
+                break;
+        }
+        player_cube_origin = "BL";
+    }
+}
+
+
+
 function animate() {
     controls.update();
+    movePlayerEdge(playerRotation);
     playgroundRotation = rotatePlayground(playgroundRotation);
-    playerRotataion = rotatePlayer(playerRotataion);
+    playerRotation = rotatePlayer(playerRotation);
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
 }
